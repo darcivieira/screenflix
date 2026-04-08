@@ -1,0 +1,25 @@
+### GET Check service status
+GET http://localhost:8000/healthz
+Content-Type: application/json
+
+###
+
+### POST Register a Movie or a Sirie
+POST http://localhost:8000/api/v1/register
+Content-Type: application/json
+
+{
+  "name": "How I Met Your Mother"
+}
+
+###
+
+### POST Register a Movie or a Sirie
+POST http://localhost:8000/api/v1/register
+Content-Type: application/json
+
+{
+  "name": "Friends"
+}
+
+###
