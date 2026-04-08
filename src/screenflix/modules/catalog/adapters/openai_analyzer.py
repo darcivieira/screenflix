@@ -32,7 +32,7 @@ MEDIA_USER_PROMPT = """
 Analise o JSON de entrada e produza um JSON de saída compatível com o schema "media".
 
 Regras de mapeamento:
-- title: traduza o título para português.
+- title: traga o titulo que foi publicado no brasil.
 - original_title: mantenha o título original em inglês.
 - media_type: use "movie" ou "series" conforme o campo Type.
 - release_date: converta para formato YYYY-MM-DD.
