@@ -24,6 +24,7 @@ WORKDIR /app
 
 COPY --from=builder /app/.venv .venv/
 COPY --from=builder /app/src src/
+COPY schemas.json .
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/src"

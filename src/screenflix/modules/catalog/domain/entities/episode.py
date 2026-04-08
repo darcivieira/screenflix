@@ -12,8 +12,10 @@ class Episode(Base, IDMixin, TimestampMixin):
 
     season_id: Mapped[int] = mapped_column(String)
     title: Mapped[str] = mapped_column(String)
-    sinopse: Mapped[Optional[str]] = mapped_column(Text, default=None)
+    original_title: Mapped[str] = mapped_column(String)
+    plot: Mapped[str] = mapped_column(Text)
     released: Mapped[Optional[date]] = mapped_column(Date, default=None)
+    poster_url: Mapped[Optional[str]] = mapped_column(String)
     season: Mapped[int] = mapped_column(Integer)
     episode: Mapped[int] = mapped_column(Integer)
     rating: Mapped[Optional[float]] = mapped_column(Float, default=None)

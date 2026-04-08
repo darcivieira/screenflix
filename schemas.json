@@ -1,0 +1,165 @@
+{
+  "media": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string",
+        "description": "The title of the media translated to Portuguese"
+      },
+      "original_title": {
+        "type": "string",
+        "description": "The original title of the media in English"
+      },
+      "media_type": {
+        "type": "string",
+        "enum": [
+          "movie",
+          "series"
+        ],
+        "description": "The type of media"
+      },
+      "release_date": {
+        "type": "string",
+        "format": "date",
+        "description": "The release date of the media"
+      },
+      "plot": {
+        "type": "string",
+        "minLength": 500,
+        "maxLength": 5000,
+        "description": "A brief description of the media"
+      },
+      "genres": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "A list of genres associated with the media"
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "A list of tags associated with the media"
+      },
+      "actors": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "A list of actors associated with the media"
+      },
+      "directors": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "A list of directors associated with the media"
+      },
+      "writers": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "A list of writers associated with the media"
+      },
+      "poster_url": {
+        "type": "string",
+        "description": "The URL of the poster image of the media"
+      },
+      "awards": {
+        "type": "string",
+        "description": "A list of awards won by the media"
+      },
+      "rating": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 10,
+        "description": "The rating of the media on a scale of 0 to 10"
+      },
+      "runtime": {
+        "type": "number",
+        "minimum": 0,
+        "description": "The runtime of the media in minutes"
+      },
+      "total_seasons": {
+        "type": "number",
+        "minimum": 0,
+        "description": "The total number of seasons for series media"
+      }
+    },
+    "required": [
+      "title",
+      "original_title",
+      "media_type",
+      "release_date",
+      "plot",
+      "genres",
+      "tags",
+      "actors",
+      "directors",
+      "writers",
+      "poster_url",
+      "rating",
+      "awards",
+      "runtime",
+      "total_seasons"
+    ]
+  },
+  "episode": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string",
+        "description": "The title of the episode translated to Portuguese"
+      },
+      "original_title": {
+        "type": "string",
+        "description": "The original title of the episode in English"
+      },
+      "plot": {
+        "type": "string",
+        "minLength": 500,
+        "maxLength": 1000,
+        "description": "A brief description of the episode"
+      },
+      "released": {
+        "type": "string",
+        "format": "date",
+        "description": "The release date of the episode"
+      },
+      "poster_url": {
+        "type": "string",
+        "description": "The URL of the poster image of the episode"
+      },
+      "season": {
+        "type": "number",
+        "minimum": 1,
+        "description": "The season number of the episode"
+      },
+      "episode": {
+        "type": "number",
+        "minimum": 1,
+        "description": "The episode number of the season"
+      },
+      "rating": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 10,
+        "description": "The rating of the episode on a scale of 0 to 10"
+      }
+    },
+    "required": [
+      "title",
+      "original_title",
+      "plot",
+      "released",
+      "poster_url",
+      "season",
+      "episode"
+    ]
+  }
+}

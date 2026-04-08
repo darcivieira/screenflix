@@ -1,6 +1,11 @@
 from typing import Optional
 
-from httpx import AsyncClient
+from fastapi import HTTPException
+from httpx import AsyncClient, HTTPStatusError
+
+from screenflix.core.logging.logger import get_logger
+
+logger = get_logger(__name__)
 
 _HEADERS = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
@@ -25,6 +30,10 @@ class BaseHttpRequest:
 
     async def _perform_request(self, method: str, url: Optional[str] = None, *, json: Optional[dict] = None, params: Optional[dict] = None) -> dict:
         async with AsyncClient(base_url=self.base_url, headers=self.headers, timeout=self.timeout) as client:
-            response = await client.request(method, url or self.base_url, json=json, params=params)
-            response.raise_for_status()
-            return response.json()
+            try:
+                response = await client.request(method, url or self.base_url, json=json, params=params)
+                response.raise_for_status()
+                return response.json()
+            except HTTPStatusError as e:
+                logger.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
+                raise HTTPException(status_code=e.response.status_code, detail=e.response.text)

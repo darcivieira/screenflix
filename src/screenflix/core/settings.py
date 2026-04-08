@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     openai_api_url: str = 'https://api.openai.com/v1'
     openai_api_key: str
+    openai_model: str = 'gpt-4o-mini'
 
     omdb_api_url: str = 'http://www.omdbapi.com'
     omdb_api_key: str
