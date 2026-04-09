@@ -45,8 +45,6 @@ class OmdbRequest(BaseHttpRequest):
 
     async def get_media_by_title(self, title: str) -> dict:
          data = await self._perform_request("GET", params=self._get_params({"t": title}))
-         logger.info(data.get("Type"))
-         logger.info(data.get("Type") == MediaType.SERIES.value)
          if data.get("Type") == MediaType.SERIES.value:
              data["episodes"] = await self.get_series_episodes_by_season(data)
          return data

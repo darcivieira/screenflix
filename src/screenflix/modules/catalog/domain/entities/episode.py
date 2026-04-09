@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from sqlalchemy import String, Text, Date, Integer, Float
+from sqlalchemy import String, Text, Date, Integer, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from screenflix.core.database import Base, IDMixin, TimestampMixin
@@ -10,7 +10,7 @@ from screenflix.core.database import Base, IDMixin, TimestampMixin
 class Episode(Base, IDMixin, TimestampMixin):
     __tablename__ = "episode"
 
-    season_id: Mapped[int] = mapped_column(String)
+    media_id: Mapped[int] = mapped_column(ForeignKey("media.id"), nullable=False)
     title: Mapped[str] = mapped_column(String)
     original_title: Mapped[str] = mapped_column(String)
     plot: Mapped[str] = mapped_column(Text)

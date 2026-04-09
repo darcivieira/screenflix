@@ -19,6 +19,12 @@
         ],
         "description": "The type of media"
       },
+      "year": {
+        "type": "integer",
+        "minimum": 1888,
+        "maximum": 2100,
+        "description": "The release year of the media"
+      },
       "release_date": {
         "type": "string",
         "format": "date",
@@ -94,6 +100,7 @@
       "title",
       "original_title",
       "media_type",
+      "year",
       "release_date",
       "plot",
       "genres",
@@ -159,7 +166,8 @@
       "released",
       "poster_url",
       "season",
-      "episode"
+      "episode",
+      "rating"
     ]
   }
 }

@@ -32,7 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_media_media_type ON media (media_type);
 
 CREATE TABLE IF NOT EXISTS episode (
     id              BIGSERIAL PRIMARY KEY,
-    season_id       BIGINT NOT NULL,
+    media_id       BIGINT NOT NULL,
     title           VARCHAR NOT NULL,
     original_title  VARCHAR(255),
     plot            TEXT NOT NULL,
@@ -44,12 +44,12 @@ CREATE TABLE IF NOT EXISTS episode (
     created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_episode_media
-        FOREIGN KEY (season_id)
+        FOREIGN KEY (media_id)
         REFERENCES media (id)
         ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_episode_season_id ON episode (season_id);
+CREATE INDEX IF NOT EXISTS idx_episode_media_id ON episode (media_id);
 CREATE INDEX IF NOT EXISTS idx_episode_season_episode ON episode (season, episode);
 
 COMMIT;
