@@ -19,7 +19,7 @@ class BaseRepository(Generic[T]):
         return await self.session.get(self.model, id)
 
     async def list_all(
-        self, skip: int = 0, limit: int = 50, **filters
+        self, skip: int = 0, limit: int = 50, order_by: str = None, desc: bool = False, **filters
     ) -> list[T]:
         query = select(self.model)
 
@@ -27,6 +27,10 @@ class BaseRepository(Generic[T]):
         for field, value in filters.items():
             if hasattr(self.model, field) and value is not None:
                 query = query.where(getattr(self.model, field) == value)
+
+        if order_by and hasattr(self.model, order_by):
+            column = getattr(self.model, order_by)
+            query = query.order_by(column.desc() if desc else column.asc())
 
         query = query.offset(skip).limit(limit)
         result = await self.session.execute(query)
