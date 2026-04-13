@@ -23,3 +23,15 @@ Content-Type: application/json
 }
 
 ###
+
+### GET Medias
+GET http://localhost:8000/api/v1/media
+Content-Type: application/json
+
+###
+
+### GET Medias
+GET http://localhost:8000/api/v1/media
+Content-Type: application/json
+
+###
