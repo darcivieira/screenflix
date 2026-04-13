@@ -1,3 +1,4 @@
+import asyncio
 import re
 from datetime import date, datetime
 from typing import Any, List, Tuple
@@ -28,6 +29,7 @@ class RegisterDataWorkflow:
         self.openai_analyzer = OpenAIAnalyzer()
         self.logger = get_logger(__name__)
         self.logger.info("RegisterDataWorkflow initialized")
+        self.semaphore = asyncio.Semaphore(3)
 
     async def _get_media_and_episodes(self, media_name: str) -> Tuple[dict, List[dict]]:
         media = await self.omdb_request.get_media_by_title(media_name)
@@ -118,6 +120,16 @@ class RegisterDataWorkflow:
         normalized_episode["episode"] = cls._to_int(normalized_episode.get("episode"))
         return normalized_episode
 
+    async def _analyze_episode(self, episode: dict, media_id: int) -> dict:
+        async with self.semaphore:
+            analyzed = await self.openai_analyzer.analyze_data(
+                episode,
+                payload_type="episode",
+            )
+            normalized = self._normalize_episode_payload(analyzed)
+            normalized["media_id"] = media_id
+            return normalized
+
     async def execute(self, media_name: str):
         try:
             source_media_dict, episodes = await self._get_media_and_episodes(media_name)
@@ -132,10 +144,11 @@ class RegisterDataWorkflow:
             await self.session.flush()
             media_id = media.id
 
-            for episode in episodes:
-                episode = await self.openai_analyzer.analyze_data(episode, payload_type="episode")
-                episode = self._normalize_episode_payload(episode)
-                episode["media_id"] = media_id
+            analyzed_episodes = await asyncio.gather(
+                *(self._analyze_episode(episode, media_id) for episode in episodes)
+            )
+
+            for episode in analyzed_episodes:
                 episode_obj = Episode(**episode)
                 self.session.add(episode_obj)
 
