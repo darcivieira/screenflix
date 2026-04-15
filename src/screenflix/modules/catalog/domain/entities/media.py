@@ -35,7 +35,7 @@ class Media(Base, IDMixin, TimestampMixin):
     runtime: Mapped[Optional[int]] = mapped_column(Integer, default=None)
     total_seasons: Mapped[Optional[int]] = mapped_column(Integer, default=None)
 
-    episodes: Mapped[list["Episode"]] = relationship(
+    episodes: Mapped[List["Episode"]] = relationship(
         back_populates="series",
         cascade="all, delete-orphan",
         lazy="selectin",  # evita N+1 por padrão
