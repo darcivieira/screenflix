@@ -1,0 +1,97 @@
+{
+  "version": "1.0.0",
+  "last_review_date": "2026-04-15",
+  "maintainer": "CTO – Darci João Vieira Junior",
+  "project": {
+    "name": "screenflix",
+    "language": "python",
+    "runtime": "python3.13",
+    "framework": "fastapi",
+    "architecture": "modular_monolith_layered",
+    "database": {
+      "primary": "postgresql",
+      "orm": "sqlalchemy_async",
+      "cache_or_queue": "redis_declared_not_yet_used"
+    },
+    "ai_features": {
+      "llm_provider": "openai_responses_api",
+      "schema_driven_output": true
+    }
+  },
+  "context": {
+    "entrypoint": "AGENTS.md",
+    "base_directory": "agents",
+    "load_order": [
+      "agents/README.md",
+      "agents/architecture-planning.md",
+      "agents/security-check.md",
+      "agents/devops-guidelines.md",
+      "agents/qa-guidelines.md"
+    ],
+    "conditional_load": {
+      "backend": ["agents/backend-development.md"],
+      "database": ["agents/database-development.md"],
+      "ai_ml": ["agents/ai-ml-development.md"]
+    }
+  },
+  "guardrails": {
+    "forbidden": [
+      "commit_secrets_or_env_values",
+      "bypass_lint_type_test_gates",
+      "introduce_cross_layer_dependencies_without_adr",
+      "change_api_contract_without_schema_and_openapi_alignment"
+    ],
+    "required": [
+      "preserve_async_io_patterns",
+      "preserve_pydantic_validation",
+      "maintain_structured_logging",
+      "respect_contributing_policy"
+    ]
+  },
+  "quality_checks": {
+    "commands": [
+      "uv sync --dev",
+      "uv run ruff format .",
+      "uv run ruff check .",
+      "uv run mypy src",
+      "uv run pytest"
+    ],
+    "blocking": true
+  },
+  "security_checks": {
+    "required": [
+      "no_plaintext_secrets_in_repo",
+      "settings_loaded_from_environment",
+      "external_api_calls_use_timeouts_and_error_handling",
+      "schema_validation_for_llm_outputs"
+    ],
+    "auth_state": "not_implemented",
+    "note": "If authentication/authorization is introduced, update agents/security-check.md first."
+  },
+  "runbooks": {
+    "develop_local": {
+      "description": "Run API locally with hot reload",
+      "command": "uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000"
+    },
+    "develop_stack": {
+      "description": "Run full local stack",
+      "command": "docker compose up --build"
+    },
+    "quality_gate": {
+      "description": "Run required local quality checks",
+      "commands": [
+        "uv run ruff format .",
+        "uv run ruff check .",
+        "uv run mypy src",
+        "uv run pytest"
+      ]
+    }
+  },
+  "consumers": {
+    "codex_cli": {"enabled": true, "mode": "write_and_validate"},
+    "junie_ai": {"enabled": true, "mode": "plan_and_apply"},
+    "cursor": {"enabled": true, "mode": "assist_with_context"},
+    "mcp_agents": {"enabled": true, "mode": "context_first"},
+    "ci_bots": {"enabled": true, "mode": "check_and_comment"}
+  }
+}

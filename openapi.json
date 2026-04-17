@@ -1,0 +1,632 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ScreenFlix",
+    "description": "A simple cataloging service for movies and TV shows!",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/register": {
+      "post": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Register",
+        "operationId": "register_api_v1_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List All Media",
+        "operationId": "list_all_media_api_v1_media_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MediaBaseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response List All Media Api V1 Media Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/v1/media/movies": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List Movies",
+        "operationId": "list_movies_api_v1_media_movies_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MediaBaseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response List Movies Api V1 Media Movies Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/v1/media/series": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List Series",
+        "operationId": "list_series_api_v1_media_series_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MediaBaseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response List Series Api V1 Media Series Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/v1/media/movies/top5": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List Top Five Movies",
+        "operationId": "list_top_five_movies_api_v1_media_movies_top5_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MediaBaseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response List Top Five Movies Api V1 Media Movies Top5 Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/v1/media/series/top5": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List Top Five Series",
+        "operationId": "list_top_five_series_api_v1_media_series_top5_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MediaBaseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response List Top Five Series Api V1 Media Series Top5 Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/v1/media/{media_id}": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Get Media",
+        "operationId": "get_media_api_v1_media__media_id__get",
+        "parameters": [
+          {
+            "name": "media_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Media Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/{media_id}/seasons/{season_id}": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List Episodes By Season",
+        "operationId": "list_episodes_by_season_api_v1_media__media_id__seasons__season_id__get",
+        "parameters": [
+          {
+            "name": "media_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Media Id"
+            }
+          },
+          {
+            "name": "season_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Season Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EpisodeBaseSchema"
+                  },
+                  "title": "Response List Episodes By Season Api V1 Media  Media Id  Seasons  Season Id  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/media/{media_id}/seasons/{season_id}/episode/{episode_id}": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List Episodes By Season",
+        "operationId": "list_episodes_by_season_api_v1_media__media_id__seasons__season_id__episode__episode_id__get",
+        "parameters": [
+          {
+            "name": "media_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Media Id"
+            }
+          },
+          {
+            "name": "season_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Season Id"
+            }
+          },
+          {
+            "name": "episode_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Episode Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EpisodeSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "summary": "Healthz",
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EpisodeBaseSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "original_title": {
+            "type": "string",
+            "title": "Original Title"
+          },
+          "poster_url": {
+            "type": "string",
+            "title": "Poster Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "original_title",
+          "poster_url"
+        ],
+        "title": "EpisodeBaseSchema"
+      },
+      "EpisodeSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "original_title": {
+            "type": "string",
+            "title": "Original Title"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "released": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Released"
+          },
+          "poster_url": {
+            "type": "string",
+            "title": "Poster Url"
+          },
+          "rating": {
+            "type": "number",
+            "title": "Rating"
+          },
+          "plot": {
+            "type": "string",
+            "title": "Plot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "original_title",
+          "title",
+          "released",
+          "poster_url",
+          "rating",
+          "plot"
+        ],
+        "title": "EpisodeSchema"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MediaBaseSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "original_title": {
+            "type": "string",
+            "title": "Original Title"
+          },
+          "poster_url": {
+            "type": "string",
+            "title": "Poster Url"
+          },
+          "rating": {
+            "type": "number",
+            "title": "Rating"
+          },
+          "plot": {
+            "type": "string",
+            "title": "Plot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "original_title",
+          "poster_url",
+          "rating",
+          "plot"
+        ],
+        "title": "MediaBaseSchema"
+      },
+      "MediaSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "original_title": {
+            "type": "string",
+            "title": "Original Title"
+          },
+          "poster_url": {
+            "type": "string",
+            "title": "Poster Url"
+          },
+          "rating": {
+            "type": "number",
+            "title": "Rating"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "release_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Release Date"
+          },
+          "genres": {
+            "type": "string",
+            "title": "Genres"
+          },
+          "actors": {
+            "type": "string",
+            "title": "Actors"
+          },
+          "writers": {
+            "type": "string",
+            "title": "Writers"
+          },
+          "directors": {
+            "type": "string",
+            "title": "Directors"
+          },
+          "plot": {
+            "type": "string",
+            "title": "Plot"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "original_title",
+          "poster_url",
+          "rating",
+          "year",
+          "release_date",
+          "genres",
+          "actors",
+          "writers",
+          "directors",
+          "plot"
+        ],
+        "title": "MediaSchema"
+      },
+      "RegisterBody": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Name of the movie or series"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "RegisterBody"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
