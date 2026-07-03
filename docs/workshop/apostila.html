@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>ScreenFlix — Apostila do Workshop</title>
+<style>
+  :root{
+    --brand:#E50914; --brand-dark:#B00610; --ink:#14141d; --muted:#5b6472;
+    --line:#e4e7ec; --bg-soft:#f7f8fa; --code-bg:#1e1e2a; --accent:#00779c;
+    --ok:#1a7f43; --warn:#9a6700;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); line-height:1.6; font-size:11pt; margin:0;
+  }
+  h1,h2,h3,h4{line-height:1.2; font-weight:700;}
+  h2{font-size:22pt; color:var(--brand-dark); border-bottom:3px solid var(--brand); padding-bottom:.2em; margin-top:0;}
+  h3{font-size:15pt; margin-top:1.4em; color:var(--ink);}
+  h4{font-size:12pt; margin-top:1.1em; color:var(--accent);}
+  p{margin:.6em 0;}
+  a{color:var(--accent); text-decoration:none;}
+  code{font-family:"SF Mono",ui-monospace,"Cascadia Code",Consolas,monospace; font-size:.86em;
+    background:var(--bg-soft); border:1px solid var(--line); border-radius:4px; padding:.05em .35em;}
+  pre{background:var(--code-bg); color:#e6e6ef; border-radius:8px; padding:14px 16px; overflow:auto;
+    font-family:"SF Mono",ui-monospace,"Cascadia Code",Consolas,monospace; font-size:9pt; line-height:1.5;
+    page-break-inside:avoid;}
+  pre code{background:none; border:none; padding:0; color:inherit; font-size:inherit;}
+  table{border-collapse:collapse; width:100%; margin:1em 0; font-size:9.5pt; page-break-inside:avoid;}
+  th,td{border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top;}
+  th{background:var(--brand); color:#fff; font-weight:600;}
+  tr:nth-child(even) td{background:var(--bg-soft);}
+  ul,ol{margin:.5em 0 .8em; padding-left:1.4em;}
+  li{margin:.25em 0;}
+  blockquote{margin:1em 0; padding:.6em 1em; border-left:4px solid var(--accent);
+    background:#eef7fb; border-radius:0 6px 6px 0; page-break-inside:avoid;}
+  .content{max-width:820px; margin:0 auto; padding:0 26px;}
+
+  /* Callouts */
+  .callout{border-radius:8px; padding:12px 16px; margin:1em 0; page-break-inside:avoid; border:1px solid;}
+  .callout .tag{font-weight:700; text-transform:uppercase; font-size:8.5pt; letter-spacing:.06em; display:block; margin-bottom:.2em;}
+  .demo{background:#fff5f5; border-color:#f3c2c2;} .demo .tag{color:var(--brand-dark);}
+  .exercise{background:#f0f9f2; border-color:#bfe3c9;} .exercise .tag{color:var(--ok);}
+  .note{background:#fff9ec; border-color:#f0dca6;} .note .tag{color:var(--warn);}
+
+  .pill{display:inline-block; background:var(--brand); color:#fff; border-radius:999px;
+    padding:2px 12px; font-size:8.5pt; font-weight:700; letter-spacing:.04em;}
+
+  /* Cover */
+  .cover{height:100vh; display:flex; flex-direction:column; justify-content:center;
+    background:linear-gradient(160deg,#0B0B0F 0%,#1E1E2A 100%); color:#F5F7FA;
+    padding:0 60px; page-break-after:always;}
+  .cover .brand{font-size:16pt; font-weight:800; letter-spacing:.28em; color:var(--brand); text-transform:uppercase;}
+  .cover h1{font-size:44pt; margin:.15em 0 .1em; line-height:1.05;}
+  .cover .sub{font-size:15pt; color:#A9B0BD; margin-bottom:1.6em;}
+  .cover .days{display:flex; gap:12px; flex-wrap:wrap; margin-top:.4em;}
+  .cover .day{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+    border-radius:10px; padding:14px 18px; flex:1; min-width:180px;}
+  .cover .day b{color:var(--brand); display:block; font-size:10pt; letter-spacing:.1em;}
+  .cover .day span{font-size:12.5pt; font-weight:600;}
+  .cover .foot{margin-top:auto; padding-bottom:40px; color:#8891a0; font-size:10pt;}
+
+  /* Section dividers */
+  .day-sep{page-break-before:always;}
+  .kicker{color:var(--brand); font-weight:800; letter-spacing:.12em; text-transform:uppercase; font-size:10pt; margin-bottom:-.2em;}
+
+  .toc a{color:var(--ink);} .toc .num{color:var(--brand); font-weight:700; display:inline-block; width:2.4em;}
+  .toc ul{list-style:none; padding-left:0;} .toc li{margin:.35em 0; font-size:11.5pt;}
+  .toc .sub2{padding-left:2.6em; font-size:10pt; color:var(--muted);}
+
+  @page{ margin:16mm 0; }
+  @media print{ .content{max-width:none;} }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ CAPA ══════════════ -->
+<section class="cover">
+  <div class="brand">ScreenFlix</div>
+  <h1>Apostila do Workshop</h1>
+  <div class="sub">Do container ao código, do código à IA — um projeto como fio condutor.</div>
+  <div class="days">
+    <div class="day"><b>DIA 1</b><span>Infra &amp; Containers</span></div>
+    <div class="day"><b>DIA 2</b><span>Programação Pragmática</span></div>
+    <div class="day"><b>DIA 3</b><span>IA no Desenvolvimento</span></div>
+  </div>
+  <div class="foot">
+    Material de apoio para os participantes &nbsp;·&nbsp; 3 encontros de 1h30<br>
+    Projeto de referência: <b>ScreenFlix</b> — FastAPI · PostgreSQL · Docker · Vue 3
+  </div>
+</section>
+
+<div class="content">
+
+<!-- ══════════════ SUMÁRIO ══════════════ -->
+<section class="toc">
+  <h2>Sumário</h2>
+  <ul>
+    <li><span class="num">0</span><a href="#intro">Introdução e preparação do ambiente</a></li>
+    <li><span class="num">1</span><a href="#dia1">Dia 1 — Infra &amp; Containers</a></li>
+    <li class="sub2">Por que containers · Dockerfile multi-stage · docker-compose · Comandos · Makefile</li>
+    <li><span class="num">2</span><a href="#dia2">Dia 2 — Programação Pragmática</a></li>
+    <li class="sub2">Ambientes modulares · Clean Architecture · Regra de dependência · Padrões · Trade-offs</li>
+    <li><span class="num">3</span><a href="#dia3">Dia 3 — IA no Desenvolvimento</a></li>
+    <li class="sub2">Claude Code · CLAUDE.md · Skills · Subagents · Agent Teams</li>
+    <li><span class="num">A</span><a href="#apendice">Apêndices — Cheat sheet e glossário</a></li>
+  </ul>
+</section>
+
+<!-- ══════════════ INTRODUÇÃO ══════════════ -->
+<section id="intro" class="day-sep">
+  <div class="kicker">Introdução</div>
+  <h2>Bem-vindo ao Workshop ScreenFlix</h2>
+
+  <p>Este workshop usa um projeto real — o <b>ScreenFlix</b>, um catálogo de filmes e
+  séries — como estudo de caso vivo. Em vez de exemplos artificiais, você vai ver como
+  as decisões de <b>infraestrutura</b>, <b>arquitetura</b> e <b>uso de IA</b> se
+  conectam num único código que evolui ao longo de três encontros.</p>
+
+  <h3>O que é o ScreenFlix?</h3>
+  <p>Uma aplicação backend em <b>Python 3.13 + FastAPI</b> (um "monólito modular em
+  camadas") com um frontend em <b>Vue 3 + Pinia</b>. Ela busca dados de filmes/séries
+  numa API externa (OMDb), normaliza com um modelo de linguagem (OpenAI) e serve um
+  catálogo via API REST.</p>
+
+  <table>
+    <tr><th>Camada</th><th>Tecnologias</th></tr>
+    <tr><td>Backend</td><td>FastAPI, SQLAlchemy async, Pydantic, Structlog, uvicorn</td></tr>
+    <tr><td>Dados</td><td>PostgreSQL 18 (tabelas <code>media</code> e <code>episode</code>)</td></tr>
+    <tr><td>Infra</td><td>Docker (multi-stage), docker-compose, uv</td></tr>
+    <tr><td>Frontend</td><td>Vue 3, Vue Router, Pinia, Vite</td></tr>
+    <tr><td>Integrações</td><td>OMDb (ingestão) + OpenAI (normalização por schema)</td></tr>
+  </table>
+
+  <h3>Como usar esta apostila</h3>
+  <p>Cada dia tem a mesma estrutura: <b>conceitos</b> → <b>o código do ScreenFlix</b>
+  → <b>exercícios práticos</b> → <b>resumo</b>. Os blocos coloridos ajudam a navegar:</p>
+  <div class="callout demo"><span class="tag">Demonstração</span> algo que será mostrado ao vivo — acompanhe no seu terminal.</div>
+  <div class="callout exercise"><span class="tag">Mãos à obra</span> um exercício para você executar.</div>
+  <div class="callout note"><span class="tag">Atenção</span> um ponto de armadilha ou decisão importante de projeto.</div>
+
+  <h3>Preparação do ambiente (faça antes do Dia 1)</h3>
+  <pre><code># 1. Clonar o repositório
+git clone &lt;url-do-repo&gt; screenflix &amp;&amp; cd screenflix
+
+# 2. Instalar as ferramentas
+#    - Docker + Docker Compose      (Dia 1)
+#    - uv  → https://docs.astral.sh/uv/   (Dias 1 e 2)
+#    - Node.js 20+                   (Dia 2, frontend)
+#    - Claude Code CLI               (Dia 3)
+
+# 3. Conferir versões
+docker --version &amp;&amp; docker compose version
+uv --version
+node --version</code></pre>
+
+  <div class="callout note"><span class="tag">Atenção</span>
+  Alguns itens (Makefile, CI, migrations Alembic, serviços <code>api</code>/<code>redis</code>
+  no compose) <b>ainda não existem</b> no repositório — de propósito. Eles são construídos
+  <b>ao vivo</b> como exercícios. A apostila sempre sinaliza o que já existe versus o que criamos.</div>
+</section>
+
+<!-- ══════════════ DIA 1 ══════════════ -->
+<section id="dia1" class="day-sep">
+  <div class="kicker">Dia 1 &nbsp;·&nbsp; 1h30</div>
+  <h2>Infra &amp; Containers</h2>
+  <p><b>Objetivo:</b> empacotar a aplicação de forma reprodutível. Ao final você saberá
+  ler/escrever um Dockerfile multi-stage, orquestrar serviços com docker-compose, usar os
+  comandos do dia a dia e padronizar tudo num Makefile.</p>
+
+  <h3>1.1 Por que containers?</h3>
+  <p>O ScreenFlix depende de Python 3.13, PostgreSQL 18, bibliotecas de sistema
+  (<code>libpq</code>) e variáveis de ambiente. Sem containers, cada pessoa reproduz isso
+  na mão — a origem do clássico <i>"na minha máquina funciona"</i>. Containers entregam:</p>
+  <ul>
+    <li><b>Reprodutibilidade</b> — a mesma imagem roda igual em qualquer lugar.</li>
+    <li><b>Isolamento</b> — o Postgres do projeto não conflita com outro instalado.</li>
+    <li><b>Paridade dev/prod</b> — a imagem testada é a que vai para produção.</li>
+  </ul>
+
+  <h3>1.2 O Dockerfile do ScreenFlix (multi-stage)</h3>
+  <p>O arquivo <code>Dockerfile</code> usa um padrão de produção: <b>duas etapas</b>. A
+  etapa <code>builder</code> instala dependências pesadas de compilação; a etapa
+  <code>runtime</code> recebe só o resultado — imagem final enxuta e segura.</p>
+  <pre><code># ── Stage 1: builder ──────────────────────────
+FROM python:3.13-slim AS builder
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
+    build-essential libpq-dev &amp;&amp; rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY pyproject.toml uv.lock ./          # copiado ANTES do código → cache de deps
+RUN pip install uv &amp;&amp; uv sync --frozen --no-dev --compile-bytecode --no-install-project
+COPY src/ src/
+
+# ── Stage 2: runtime ──────────────────────────
+FROM python:3.13-slim AS runtime
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends \
+    libpq5 curl &amp;&amp; rm -rf /var/lib/apt/lists/*
+RUN groupadd -r screenflix &amp;&amp; useradd -r -g screenflix -d /app screenflix
+WORKDIR /app
+COPY --from=builder /app/.venv .venv/   # só o venv pronto vem do builder
+COPY --from=builder /app/src src/
+COPY schemas.json .
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app/src"
+USER screenflix                         # non-root: boa prática de segurança
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD curl -f http://localhost:8000/healthz || exit 1
+EXPOSE 8000
+CMD ["uvicorn", "screenflix.main:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+
+  <table>
+    <tr><th>Técnica</th><th>Por que importa</th></tr>
+    <tr><td>Multi-stage</td><td>Ferramentas de build ficam fora da imagem final → menor e mais segura.</td></tr>
+    <tr><td>Ordem dos <code>COPY</code></td><td><code>pyproject.toml</code>/<code>uv.lock</code> antes do código: alterar código não reinstala dependências (cache de camadas).</td></tr>
+    <tr><td><code>--no-install-recommends</code> + limpar apt</td><td>Reduz tamanho e superfície de ataque.</td></tr>
+    <tr><td>Usuário <code>screenflix</code> (non-root)</td><td>O container não roda como root.</td></tr>
+    <tr><td><code>HEALTHCHECK</code> em <code>/healthz</code></td><td>O orquestrador sabe se o container está saudável. É um contrato de infra.</td></tr>
+  </table>
+
+  <div class="callout demo"><span class="tag">Demonstração</span>
+  <pre style="margin:.5em 0 0"><code>docker build -t screenflix:latest .
+docker images screenflix     # observe o tamanho da imagem final
+docker history screenflix    # veja as camadas geradas</code></pre></div>
+
+  <h3>1.3 Orquestrando serviços com docker-compose</h3>
+  <p>O <code>docker-compose.yml</code> descreve os serviços. Hoje, apenas o banco
+  (<code>db</code>) está ativo; <code>api</code> e <code>redis</code> estão comentados —
+  vamos ativá-los ao longo do dia.</p>
+  <pre><code>services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql   # bootstrap do schema
+    ports:
+      - "5532:5432"        # host:container — 5532 evita conflito com Postgres local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3</code></pre>
+
+  <p><b>Conceitos:</b> <code>image</code> (imagem pronta) vs <code>build</code> (constrói do
+  Dockerfile); variáveis <code>${...}</code> vindas do <code>.env</code>; o volume que monta
+  <code>scripts/init.sql</code> e é executado pelo Postgres na primeira inicialização
+  (cria as tabelas <code>media</code> e <code>episode</code>).</p>
+
+  <h4>Crie o arquivo <code>.env</code> na raiz (não versionado)</h4>
+  <pre><code>POSTGRES_USER=screenflix
+POSTGRES_PASSWORD=screenflix
+POSTGRES_DB=screenflix
+
+SCREENFLIX_APP_NAME=ScreenFlix
+SCREENFLIX_APP_DESCRIPTION="Catálogo de filmes e séries"
+SCREENFLIX_DATABASE_URL=postgresql+asyncpg://screenflix:screenflix@db:5432/screenflix
+SCREENFLIX_OPENAI_API_KEY=sk-...     # placeholder no workshop
+SCREENFLIX_OMDB_API_KEY=...          # placeholder no workshop</code></pre>
+
+  <div class="callout demo"><span class="tag">Demonstração — subir só o banco</span>
+  <pre style="margin:.5em 0 0"><code>docker compose up -d db
+docker compose logs -f db     # veja o init.sql rodando
+docker compose exec db psql -U screenflix -d screenflix -c "\dt"</code></pre></div>
+
+  <div class="callout exercise"><span class="tag">Mãos à obra</span>
+  Descomente os blocos <code>api</code> e <code>redis</code> no <code>docker-compose.yml</code>
+  e suba o stack completo com <code>docker compose up --build</code>. Depois valide com
+  <code>curl http://localhost:8000/healthz</code>. Note que o serviço <code>api</code> usa
+  <code>volumes: ./src:/app/src</code> + <code>--reload</code> para hot-reload em
+  desenvolvimento — o mesmo Dockerfile serve dev e prod.</div>
+
+  <h3>1.4 Comandos essenciais (cheat sheet)</h3>
+  <table>
+    <tr><th>Objetivo</th><th>Comando</th></tr>
+    <tr><td>Build da imagem</td><td><code>docker build -t screenflix:latest .</code></td></tr>
+    <tr><td>Subir stack (background)</td><td><code>docker compose up -d</code></td></tr>
+    <tr><td>Subir com rebuild</td><td><code>docker compose up --build</code></td></tr>
+    <tr><td>Ver serviços</td><td><code>docker compose ps</code></td></tr>
+    <tr><td>Logs (seguir)</td><td><code>docker compose logs -f api</code></td></tr>
+    <tr><td>Shell no container</td><td><code>docker compose exec api bash</code></td></tr>
+    <tr><td>Parar tudo</td><td><code>docker compose down</code></td></tr>
+    <tr><td>Parar e apagar volumes</td><td><code>docker compose down -v</code></td></tr>
+  </table>
+
+  <h3>1.5 Makefile — padronizando o fluxo</h3>
+  <div class="callout note"><span class="tag">Atenção</span> O repositório <b>ainda não tem
+  um Makefile</b> — criá-lo é o exercício central do dia. Ninguém decora
+  <code>uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000</code>;
+  com Makefile isso vira <code>make dev</code>.</div>
+
+  <div class="callout exercise"><span class="tag">Mãos à obra — criar o Makefile</span></div>
+  <pre><code>.PHONY: help install dev up up-build down logs format lint type test check build clean
+
+help:        ## Lista os alvos
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+	  | awk 'BEGIN{FS=":.*?## "};{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
+install:     ## Instala dependências (com dev)
+	uv sync --dev
+dev:         ## API local com hot-reload
+	uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000
+up:          ## Sobe o stack
+	docker compose up -d
+up-build:    ## Sobe reconstruindo
+	docker compose up --build
+down:        ## Derruba o stack
+	docker compose down
+logs:        ## Logs da api
+	docker compose logs -f api
+format:      ## Formata
+	uv run ruff format .
+lint:        ## Lint
+	uv run ruff check .
+type:        ## Tipos
+	uv run mypy src
+test:        ## Testes
+	uv run pytest
+check: format lint type test   ## Roda todos os quality gates
+build:       ## Imagem de produção
+	docker build -t screenflix:latest .
+clean:       ## Limpa containers/volumes/imagens
+	docker compose down -v &amp;&amp; docker image prune -f</code></pre>
+  <p>Agora <code>make help</code> lista tudo, e <code>make check</code> roda os quatro
+  <b>quality gates</b> do projeto (formatação, lint, tipos, testes) — os mesmos que a IA
+  usará no Dia 3.</p>
+  <div class="callout note"><span class="tag">Armadilha do Make</span> variáveis de shell
+  precisam de <code>$$</code> (ex.: <code>$${POSTGRES_USER}</code>) para o Make não interpolá-las.</div>
+
+  <h4>Resumo do Dia 1</h4>
+  <ul>
+    <li>Container = ambiente reproduzível; o Dockerfile <b>multi-stage</b> entrega imagem enxuta, non-root e com healthcheck.</li>
+    <li><b>docker-compose</b> orquestra app + banco + cache; <code>init.sql</code> faz o bootstrap do schema.</li>
+    <li>O <b>Makefile</b> padroniza comandos e espelha os quality gates.</li>
+  </ul>
+</section>
+
+<!-- ══════════════ DIA 2 ══════════════ -->
+<section id="dia2" class="day-sep">
+  <div class="kicker">Dia 2 &nbsp;·&nbsp; 1h30</div>
+  <h2>Programação Pragmática</h2>
+  <p><b>Objetivo:</b> abrir a "caixa" empacotada no Dia 1 e entender como o código se
+  organiza — ambientes modulares e Clean Architecture — sem dogmatismo.</p>
+
+  <h3>2.1 A tese: arquitetura serve à mudança</h3>
+  <p>Arquitetura não é enfeite; existe para tornar a mudança <b>barata e segura</b>.
+  "Pragmática" = aplicar princípios na medida certa. O ScreenFlix se descreve como um
+  <b>monólito modular em camadas</b>: um único deploy (simples de operar), mas internamente
+  bem organizado (fácil de evoluir). É o ponto ideal antes de pensar em microsserviços.</p>
+
+  <h3>2.2 Ambientes modulares</h3>
+  <p>Um ambiente é "modular" quando a aplicação <b>não sabe</b> onde roda — ela apenas lê
+  configuração de fora. Assim, a mesma imagem roda em dev, teste e produção.</p>
+
+  <h4>Backend — <code>pydantic-settings</code></h4>
+  <pre><code>class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="SCREENFLIX_",   # toda config vem de SCREENFLIX_*
+        env_file=".env",
+        extra="ignore",
+    )
+    app_name: str                 # obrigatório (sem default)
+    database_url: str             # obrigatório
+    database_echo: bool = False   # com default e tipado
+    openai_api_key: str           # obrigatório
+    omdb_api_key: str             # obrigatório
+
+def get_settings() -&gt; Settings:    # singleton cacheado
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings</code></pre>
+  <ul>
+    <li><b>Tipagem forte</b> — Pydantic valida e converte na inicialização. Config inválida falha na hora (<i>fail fast</i>), não vira bug em runtime.</li>
+    <li><b>Obrigatório vs default</b> — campos sem default tornam impossível subir mal configurado.</li>
+    <li><b>Segurança</b> — segredos vêm do ambiente; o <code>.env</code> está no <code>.gitignore</code>.</li>
+  </ul>
+
+  <h4>Frontend — variável de build do Vite</h4>
+  <pre><code>export const API_BASE = import.meta.env.VITE_API_BASE || "";</code></pre>
+  <p>Mesmo princípio: a URL da API vem de <code>VITE_API_BASE</code>. Detalhe elegante — se
+  estiver vazia, o app entra em <b>"Modo demonstração"</b> (offline) sem quebrar a interface.</p>
+
+  <h3>2.3 O mapa das camadas</h3>
+  <pre><code>src/screenflix/
+├── main.py            # entrypoint FastAPI (fino: middleware, router, /healthz)
+├── core/              # preocupações transversais (compartilhadas)
+│   ├── settings.py         # configuração
+│   ├── database.py         # engine/session async, Base, mixins
+│   ├── repository.py       # BaseRepository[T] genérico
+│   ├── app/                # dependencies (DI) + middlewares
+│   └── logging/            # structlog (config, trace_id, logger)
+└── modules/           # módulos de negócio (bounded contexts)
+    └── catalog/
+        ├── domain/              # camada 1 — entidades
+        ├── application/         # camada 2 — services, use cases, schemas
+        ├── infrastructure/      # camada 3 — repositórios (persistência)
+        ├── adapters/            # integrações externas (OMDb, OpenAI)
+        └── presentation/        # camada 4 — API HTTP (FastAPI)</code></pre>
+  <p>O que é framework/infra compartilhada fica em <code>core/</code>; regra de negócio fica
+  em <code>modules/&lt;contexto&gt;/</code>. Para um novo contexto (ex.: <code>users</code>),
+  replica-se a mesma estrutura de camadas — o padrão é repetível e previsível.</p>
+
+  <h3>2.4 Clean Architecture, camada por camada</h3>
+
+  <h4>Domain — entidades</h4>
+  <p><code>Media</code> e <code>Episode</code> são o coração do negócio; <code>MediaType</code>
+  é <code>movie</code>/<code>series</code>. Usam mixins (<code>IDMixin</code>,
+  <code>TimestampMixin</code>).</p>
+  <div class="callout note"><span class="tag">Trade-off pragmático</span> As entidades
+  <b>são modelos SQLAlchemy</b> (herdam <code>Base</code>). Na Clean Architecture "pura", o
+  domínio seria independente de framework. Aqui trocou-se portabilidade por menos boilerplate
+  — uma escolha consciente que vale debater.</div>
+
+  <h4>Application — services, use cases, schemas</h4>
+  <p><b>Service</b> = operação simples e reutilizável. <b>Use case</b> = orquestração de um
+  objetivo de negócio. Exemplo de service:</p>
+  <pre><code>class MediaService:
+    def __init__(self, session: AsyncSession):
+        self.repository = RepositoryFactor(session)
+    async def top_five(self, media_type: str) -&gt; list[Media]:
+        return await self.repository.media.list_all(
+            limit=5, media_type=media_type, order_by="rating", desc=True)</code></pre>
+  <p>O use case <code>RegisterDataWorkflow.execute()</code> orquestra um fluxo rico: busca na
+  OMDb → normaliza via OpenAI (com <code>asyncio.Semaphore(3)</code> limitando concorrência)
+  → persiste <code>Media</code> e <code>Episode</code>s em paralelo → <code>commit()</code>
+  ou <code>rollback()</code> em erro (transação única). Os <b>schemas</b> Pydantic são a
+  fronteira do contrato: nunca se expõe a entidade direto.</p>
+
+  <h4>Infrastructure — repositórios</h4>
+  <p>O padrão <b>Repository</b> isola o acesso a dados. A base genérica evita repetição:</p>
+  <pre><code>class BaseRepository(Generic[T]):
+    def __init__(self, session: AsyncSession, model: Type[T]):
+        self.session = session; self.model = model
+    async def get_by_id(self, id: int) -&gt; T | None: ...
+    async def list_all(self, skip=0, limit=50, order_by=None, desc=False, **filters): ...
+    async def count(self, **filters) -&gt; int: ...
+
+class MediaRepository(BaseRepository[Media]): pass   # herda tudo</code></pre>
+
+  <h4>Presentation — API + Injeção de Dependência</h4>
+  <p>O endpoint é <b>fino</b>: valida, delega, devolve. A DI encadeia sessão → service → endpoint:</p>
+  <pre><code>async def get_media_service(session: AsyncSession = Depends(get_db_session)) -&gt; MediaService:
+    return MediaService(session)
+
+@router.get("/movies/top5", response_model=list[MediaBaseSchema])
+async def list_top_five_movies(service: MediaService = Depends(get_media_service)):
+    return await service.top_five(media_type="movie")</code></pre>
+  <p>O <code>response_model=</code> garante que a saída sempre obedece ao contrato.</p>
+
+  <h3>2.5 A regra de dependência (o coração de tudo)</h3>
+  <p>As dependências apontam <b>para dentro</b>:</p>
+  <pre><code>presentation ──▶ application ──▶ domain
+                     │
+infrastructure ──────┘  (depende de domain + core)
+adapters ────────────▶  core.settings / domain</code></pre>
+  <ul>
+    <li><code>domain</code> <b>não</b> importa <code>presentation</code>.</li>
+    <li><code>presentation</code> <b>não</b> contém regra de negócio (só transporte HTTP).</li>
+    <li>Nunca consulte o banco direto de um endpoint — sempre service → repository.</li>
+  </ul>
+
+  <div class="callout exercise"><span class="tag">Mãos à obra</span>
+  Adicione <code>GET /api/v1/media/count</code> respeitando as camadas: (1) método
+  <code>count()</code> no <code>MediaService</code> usando <code>self.repository.media.count()</code>;
+  (2) handler fino em <code>enpoints/media.py</code> delegando ao service; (3) um DTO Pydantic
+  de resposta; (4) testes (happy path + erro). Valide com <code>make check</code>.
+  <b>Regra de ouro:</b> nenhuma query no endpoint.</div>
+
+  <h3>2.6 Onde o ScreenFlix escolheu pragmatismo</h3>
+  <ul>
+    <li><b>Entidades = modelos ORM</b> — simplicidade sobre portabilidade.</li>
+    <li><b><code>register</code> fire-and-forget</b> — o endpoint dispara <code>asyncio.create_task</code>
+      e responde na hora; sem fila durável, o trabalho se perde se o processo cair (dívida consciente).</li>
+    <li><b>Top 5 no frontend</b> — apesar de existirem endpoints <code>/top5</code>, a Home calcula no cliente.</li>
+  </ul>
+
+  <h4>Resumo do Dia 2</h4>
+  <ul>
+    <li>Configuração <b>injetada de fora</b> (pydantic-settings, Vite) → ambientes modulares.</li>
+    <li>Quatro camadas com responsabilidades claras + <b>regra de dependência</b> = mudança segura.</li>
+    <li>Clean Architecture é um <b>espectro</b>: o valor está em saber, conscientemente, onde relaxar.</li>
+  </ul>
+</section>
+
+<!-- ══════════════ DIA 3 ══════════════ -->
+<section id="dia3" class="day-sep">
+  <div class="kicker">Dia 3 &nbsp;·&nbsp; 1h30</div>
+  <h2>IA no Desenvolvimento</h2>
+  <p><b>Objetivo:</b> usar o <b>Claude Code</b> de forma disciplinada — fazendo a IA
+  <b>respeitar</b> a infra do Dia 1 e a arquitetura do Dia 2. (Formatos válidos para o
+  Claude Code v2.1.x, jul/2026.)</p>
+
+  <h3>3.1 O insight do ScreenFlix</h3>
+  <p>Este repositório <b>já foi construído pensando em IA</b>. Ele tem um <code>AGENTS.md</code>
+  (ponto de entrada), um <code>AI-CONFIG.json</code> (regras de runtime) e uma pasta
+  <code>/agents</code> com 7 guias de domínio. Essa camada de contexto é <b>genérica</b>
+  (Markdown + JSON). O trabalho do dia é <b>traduzi-la</b> em artefatos <b>nativos</b> do
+  Claude Code:</p>
+  <table>
+    <tr><th>Contexto genérico do repo</th><th>Artefato nativo do Claude Code</th></tr>
+    <tr><td><code>AGENTS.md</code></td><td><code>CLAUDE.md</code> (memória de projeto)</td></tr>
+    <tr><td><code>AI-CONFIG.json → quality_checks</code></td><td>Skill <code>/quality-gate</code> + Hook</td></tr>
+    <tr><td><code>agents/backend-development.md</code></td><td>Subagent <code>backend-dev</code></td></tr>
+    <tr><td><code>agents/qa-guidelines.md</code></td><td>Subagent <code>qa-reviewer</code></td></tr>
+    <tr><td><code>agents/security-check.md</code></td><td>Subagent <code>security-check</code></td></tr>
+    <tr><td>vários subagents atuando juntos</td><td>Agent Team</td></tr>
+  </table>
+
+  <h3>3.2 CLAUDE.md — a memória do projeto</h3>
+  <p>É o arquivo que o Claude Code lê no início de <b>toda</b> sessão. Vive em
+  <code>./CLAUDE.md</code> (projeto, versionado) ou <code>~/.claude/CLAUDE.md</code> (usuário).</p>
+  <div class="callout note"><span class="tag">Atenção</span> O Claude Code lê
+  <b><code>CLAUDE.md</code></b>, <b>não</b> <code>AGENTS.md</code>. Como o ScreenFlix já
+  investiu num <code>AGENTS.md</code> rico, a jogada é <b>importar</b>, não duplicar.</div>
+  <pre><code># ScreenFlix — Contexto para Claude Code
+
+@AGENTS.md
+@AI-CONFIG.json
+@agents/architecture-planning.md
+
+## Regras rápidas
+- Arquitetura em camadas: nunca acesse o banco a partir da presentation.
+- Rode os quality gates antes de concluir: ruff format, ruff check, mypy src, pytest.
+- Todo componente novo exige testes (happy path, validação, erro).
+- Segredos vêm do ambiente (SCREENFLIX_*). Nunca commite .env.</code></pre>
+  <p>O <code>@AGENTS.md</code> puxa o arquivo existente para o contexto, reaproveitando o
+  trabalho do time.</p>
+
+  <h3>3.3 Skills — encapsulando procedimentos</h3>
+  <p>Uma <b>Skill</b> é um procedimento reutilizável, carregado <b>sob demanda</b>, que vira
+  um comando <code>/nome</code>. Vive em <code>.claude/skills/&lt;nome&gt;/SKILL.md</code>.</p>
+  <pre><code>---
+name: quality-gate
+description: Roda os quality gates bloqueantes do ScreenFlix. Use antes de concluir mudanças.
+invocation: both
+---
+
+Execute, nesta ordem, parando no primeiro que falhar:
+1. `uv run ruff format .`
+2. `uv run ruff check .`
+3. `uv run mypy src`
+4. `uv run pytest`
+
+Se algum falhar, resuma o erro e proponha a correção mínima. Não considere a tarefa
+concluída enquanto os quatro não passarem.</code></pre>
+  <div class="callout note"><span class="tag">Hook (bônus)</span> Para <b>forçar</b> o gate
+  automaticamente, configure um hook em <code>.claude/settings.json</code> no evento
+  <code>Stop</code>. Hooks tornam comportamentos automáticos — a máquina executa, não o modelo.</div>
+
+  <h3>3.4 Subagents — especialistas por domínio</h3>
+  <p>Um <b>Subagent</b> é um trabalhador <b>isolado</b>, com contexto e ferramentas próprios,
+  ao qual o Claude principal <b>delega</b> tarefas conforme a <code>description</code>. Vive
+  em <code>.claude/agents/&lt;nome&gt;.md</code>. Cada guia de <code>/agents/</code> vira um subagent:</p>
+  <pre><code>---
+name: qa-reviewer
+description: Revisor de QA do ScreenFlix. Use após alterar código para checar cobertura de testes.
+tools: Read, Grep, Glob, Bash
+model: sonnet
+---
+
+Você é o revisor de QA. Fonte de verdade: agents/qa-guidelines.md.
+Ao revisar: identifique componentes novos; exija testes (happy path, validação, erro);
+verifique thresholds (&gt;=80% módulos alterados); rode `uv run pytest`. Se faltar teste
+para componente novo, marque como BLOQUEANTE e liste o que testar.</code></pre>
+  <table>
+    <tr><th>Subagent</th><th>Traduz de</th><th>Papel</th></tr>
+    <tr><td><code>architect</code></td><td>architecture-planning.md</td><td>Protege a regra de dependência</td></tr>
+    <tr><td><code>backend-dev</code></td><td>backend-development.md</td><td>Padrões FastAPI async, mypy strict</td></tr>
+    <tr><td><code>database-dev</code></td><td>database-development.md</td><td>Repos/migrations, sem query na presentation</td></tr>
+    <tr><td><code>security-check</code></td><td>security-check.md</td><td>Segredos via env, "fail closed"</td></tr>
+    <tr><td><code>qa-reviewer</code></td><td>qa-guidelines.md</td><td>Cobertura e política de testes</td></tr>
+  </table>
+  <p><b>Skill vs Subagent:</b> a Skill roda na conversa principal (procedimento); o Subagent
+  roda isolado, com contexto próprio, e devolve um resultado.</p>
+
+  <h3>3.5 Agent Teams — orquestração multi-agente</h3>
+  <div class="callout note"><span class="tag">Experimental</span> Recurso desativado por
+  padrão (<code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code>). Apresentado como direção do
+  futuro, não fluxo de produção estável.</div>
+  <table>
+    <tr><th>Aspecto</th><th>Subagents</th><th>Agent Teams</th></tr>
+    <tr><td>Comunicação</td><td>Reportam ao agente principal</td><td>Teammates conversam entre si</td></tr>
+    <tr><td>Coordenação</td><td>Agente principal gerencia</td><td>Lista de tarefas compartilhada</td></tr>
+    <tr><td>Uso ideal</td><td>Tarefas focadas e rápidas</td><td>Trabalho paralelo complexo</td></tr>
+  </table>
+  <p>Um <b>team lead</b> spawna teammates independentes que compartilham uma lista de tarefas
+  e herdam <code>CLAUDE.md</code>, Skills e Subagents do projeto. Regra prática: comece
+  simples — subagent para mudanças focadas; team só para trabalho amplo e paralelizável.</p>
+
+  <h4>Resumo do Dia 3</h4>
+  <ul>
+    <li>Contexto de engenharia (Dias 1 e 2) vira <b>contexto executável de IA</b>.</li>
+    <li><code>CLAUDE.md</code> importa o que já existe; <b>Skills</b> encapsulam procedimentos;
+      <b>Subagents</b> são especialistas; <b>Agent Teams</b> coordenam vários.</li>
+    <li>Os artefatos de IA <b>fazem cumprir</b> a arquitetura — o <code>qa-reviewer</code> exige
+      testes, o <code>architect</code> protege as camadas.</li>
+  </ul>
+</section>
+
+<!-- ══════════════ APÊNDICE ══════════════ -->
+<section id="apendice" class="day-sep">
+  <div class="kicker">Apêndices</div>
+  <h2>Cheat sheet, glossário e referências</h2>
+
+  <h3>A.1 Comandos de bolso</h3>
+  <table>
+    <tr><th>Contexto</th><th>Comando</th></tr>
+    <tr><td>Instalar deps</td><td><code>uv sync --dev</code></td></tr>
+    <tr><td>API local (reload)</td><td><code>uv run uvicorn screenflix.main:app --reload --reload-dir src --port 8000</code></td></tr>
+    <tr><td>Stack completo</td><td><code>docker compose up --build</code></td></tr>
+    <tr><td>Quality gates</td><td><code>uv run ruff format . &amp;&amp; uv run ruff check . &amp;&amp; uv run mypy src &amp;&amp; uv run pytest</code></td></tr>
+    <tr><td>psql no banco</td><td><code>docker compose exec db psql -U screenflix -d screenflix</code></td></tr>
+    <tr><td>Frontend (dev)</td><td><code>cd frontend &amp;&amp; npm install &amp;&amp; npm run dev</code></td></tr>
+  </table>
+
+  <h3>A.2 Glossário</h3>
+  <table>
+    <tr><th>Termo</th><th>Significado</th></tr>
+    <tr><td>Multi-stage build</td><td>Dockerfile com etapas separadas (build vs runtime) para imagem final enxuta.</td></tr>
+    <tr><td>Healthcheck</td><td>Verificação periódica que diz ao orquestrador se o container está saudável.</td></tr>
+    <tr><td>Monólito modular</td><td>Um único deploy, internamente dividido em módulos e camadas.</td></tr>
+    <tr><td>Clean Architecture</td><td>Organização em camadas com dependências apontando para dentro.</td></tr>
+    <tr><td>Repository</td><td>Padrão que isola o acesso a dados da lógica de negócio.</td></tr>
+    <tr><td>Use case</td><td>Orquestração de um objetivo de negócio (vários passos/adapters).</td></tr>
+    <tr><td>Injeção de dependência</td><td>Fornecer dependências prontas (ex.: sessão de banco) em vez de criá-las dentro.</td></tr>
+    <tr><td>CLAUDE.md</td><td>Arquivo de memória/contexto que o Claude Code lê a cada sessão.</td></tr>
+    <tr><td>Skill</td><td>Procedimento reutilizável carregado sob demanda; vira comando <code>/nome</code>.</td></tr>
+    <tr><td>Subagent</td><td>Agente isolado e especializado ao qual o Claude principal delega.</td></tr>
+    <tr><td>Agent Team</td><td>Vários agentes independentes coordenando via lista de tarefas (experimental).</td></tr>
+  </table>
+
+  <h3>A.3 Arquivos-chave do repositório</h3>
+  <table>
+    <tr><th>Tema</th><th>Arquivo</th></tr>
+    <tr><td>Container</td><td><code>Dockerfile</code>, <code>docker-compose.yml</code>, <code>scripts/init.sql</code></td></tr>
+    <tr><td>Config/tooling</td><td><code>pyproject.toml</code> (uv, ruff, mypy, pytest)</td></tr>
+    <tr><td>Arquitetura</td><td><code>src/screenflix/core/</code>, <code>src/screenflix/modules/catalog/</code></td></tr>
+    <tr><td>Frontend</td><td><code>frontend/</code> (Vue 3 + Pinia)</td></tr>
+    <tr><td>Contexto de IA</td><td><code>AGENTS.md</code>, <code>AI-CONFIG.json</code>, <code>agents/*.md</code></td></tr>
+    <tr><td>Roteiros do instrutor</td><td><code>docs/workshop/dia-1..3.md</code></td></tr>
+  </table>
+
+  <p style="margin-top:2em; color:var(--muted); font-size:9.5pt; text-align:center;">
+    ScreenFlix Workshop · Material didático para os participantes · 3 encontros de 1h30<br>
+    Formatos do Claude Code válidos para a versão v2.1.x (jul/2026).
+  </p>
+</section>
+
+</div>
+</body>
+</html>
