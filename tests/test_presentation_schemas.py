@@ -3,13 +3,13 @@ from datetime import date
 import pytest
 from pydantic import ValidationError
 
-from screenflix.modules.catalog.presentation.api.v1.schemas.media import (
+from screenflix.modules.catalog.application.schemas.media import (
     EpisodeBaseSchema,
     EpisodeSchema,
     MediaBaseSchema,
     MediaSchema,
 )
-from screenflix.modules.catalog.presentation.api.v1.schemas.register import RegisterBody
+from screenflix.modules.catalog.application.schemas.register import RegisterBody
 
 
 def test_register_body_validation():

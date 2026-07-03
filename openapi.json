@@ -293,8 +293,8 @@
         "tags": [
           "Catalog"
         ],
-        "summary": "List Episodes By Season",
-        "operationId": "list_episodes_by_season_api_v1_media__media_id__seasons__season_id__episode__episode_id__get",
+        "summary": "Get Episode By Season",
+        "operationId": "get_episode_by_season_api_v1_media__media_id__seasons__season_id__episode__episode_id__get",
         "parameters": [
           {
             "name": "media_id",

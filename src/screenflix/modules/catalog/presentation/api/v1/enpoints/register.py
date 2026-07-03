@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from screenflix.core.app.dependencies import get_db_session
 from screenflix.core.logging.logger import get_logger
 from screenflix.modules.catalog.application.use_cases.register_data_workflow import RegisterDataWorkflow
-from screenflix.modules.catalog.presentation.api.v1.schemas.register import RegisterBody
+from screenflix.modules.catalog.application.schemas.register import RegisterBody
 
 
 logger = get_logger(__name__)

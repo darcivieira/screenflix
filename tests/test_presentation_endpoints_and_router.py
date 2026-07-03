@@ -7,25 +7,21 @@ from fastapi import HTTPException
 from screenflix.modules.catalog.presentation.api.v1 import router as v1_router_module
 from screenflix.modules.catalog.presentation.api.v1.enpoints import media as media_endpoints
 from screenflix.modules.catalog.presentation.api.v1.enpoints import register as register_endpoints
-from screenflix.modules.catalog.presentation.api.v1.schemas.register import RegisterBody
+from screenflix.modules.catalog.application.schemas.register import RegisterBody
 
 
-class FakeMediaRepo:
+class FakeMediaService:
     def __init__(self):
         self.list_all = AsyncMock(return_value=[{"id": 1}])
-        self.get_by_id = AsyncMock(return_value={"id": 1})
+        self.list_by_type = AsyncMock(return_value=[{"id": 1}])
+        self.top_five = AsyncMock(return_value=[{"id": 1}])
+        self.get = AsyncMock(return_value={"id": 1})
 
 
-class FakeEpisodeRepo:
+class FakeEpisodeService:
     def __init__(self):
-        self.list_all = AsyncMock(return_value=[{"id": 2}])
-        self.get_by_media_and_season_and_episode = AsyncMock(return_value={"id": 3})
-
-
-class FakeRepositoryFactor:
-    def __init__(self):
-        self.media = FakeMediaRepo()
-        self.episode = FakeEpisodeRepo()
+        self.list_by_season = AsyncMock(return_value=[{"id": 2}])
+        self.get = AsyncMock(return_value={"id": 3})
 
 
 @pytest.mark.asyncio
@@ -36,9 +32,9 @@ async def test_router_includes_register_and_media_routes():
 
 
 @pytest.mark.asyncio
-async def test_get_media_service_builds_repository_factor(monkeypatch):
+async def test_get_media_service_builds_media_service(monkeypatch):
     fake = object()
-    monkeypatch.setattr("screenflix.modules.catalog.presentation.api.v1.enpoints.media.RepositoryFactor", lambda session: fake)
+    monkeypatch.setattr("screenflix.modules.catalog.presentation.api.v1.enpoints.media.MediaService", lambda session: fake)
 
     result = await media_endpoints.get_media_service(session=object())
 
@@ -46,30 +42,49 @@ async def test_get_media_service_builds_repository_factor(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_media_endpoints_happy_paths():
-    repository = FakeRepositoryFactor()
-    list_episodes_route = next(
-        route for route in media_endpoints.router.routes if route.path.endswith("/{media_id}/seasons/{season_id}")
-    )
-    list_episodes_endpoint = list_episodes_route.endpoint
+async def test_get_episode_service_builds_episode_service(monkeypatch):
+    fake = object()
+    monkeypatch.setattr("screenflix.modules.catalog.presentation.api.v1.enpoints.media.EpisodeService", lambda session: fake)
 
-    assert await media_endpoints.list_all_media(repository) == [{"id": 1}]
-    assert await media_endpoints.list_movies(repository) == [{"id": 1}]
-    assert await media_endpoints.list_series(repository) == [{"id": 1}]
-    assert await media_endpoints.list_top_five_movies(repository) == [{"id": 1}]
-    assert await media_endpoints.list_top_five_series(repository) == [{"id": 1}]
-    assert await media_endpoints.get_media(1, repository) == {"id": 1}
-    assert await list_episodes_endpoint(1, 1, repository) == [{"id": 2}]
-    assert await media_endpoints.list_episodes_by_season(1, 1, 1, repository) == {"id": 3}
+    result = await media_endpoints.get_episode_service(session=object())
+
+    assert result is fake
+
+
+@pytest.mark.asyncio
+async def test_media_endpoints_happy_paths():
+    media_service = FakeMediaService()
+    episode_service = FakeEpisodeService()
+
+    assert await media_endpoints.list_all_media(media_service) == [{"id": 1}]
+    assert await media_endpoints.list_movies(media_service) == [{"id": 1}]
+    assert await media_endpoints.list_series(media_service) == [{"id": 1}]
+    assert await media_endpoints.list_top_five_movies(media_service) == [{"id": 1}]
+    assert await media_endpoints.list_top_five_series(media_service) == [{"id": 1}]
+    assert await media_endpoints.get_media(1, media_service) == {"id": 1}
+    assert await media_endpoints.list_episodes_by_season(1, 1, episode_service) == [{"id": 2}]
+    assert await media_endpoints.get_episode_by_season(1, 1, 1, episode_service) == {"id": 3}
+
+
+@pytest.mark.asyncio
+async def test_media_endpoint_media_not_found():
+    media_service = FakeMediaService()
+    media_service.get = AsyncMock(return_value=None)
+
+    with pytest.raises(HTTPException) as exc:
+        await media_endpoints.get_media(1, media_service)
+
+    assert exc.value.status_code == 404
+    assert exc.value.detail == "Media not found"
 
 
 @pytest.mark.asyncio
 async def test_media_endpoint_episode_not_found():
-    repository = FakeRepositoryFactor()
-    repository.episode.get_by_media_and_season_and_episode = AsyncMock(return_value=None)
+    episode_service = FakeEpisodeService()
+    episode_service.get = AsyncMock(return_value=None)
 
     with pytest.raises(HTTPException) as exc:
-        await media_endpoints.list_episodes_by_season(1, 1, 1, repository)
+        await media_endpoints.get_episode_by_season(1, 1, 1, episode_service)
 
     assert exc.value.status_code == 404
     assert exc.value.detail == "Episode not found"
