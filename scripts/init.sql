@@ -46,10 +46,11 @@ CREATE TABLE IF NOT EXISTS episode (
     CONSTRAINT fk_episode_media
         FOREIGN KEY (media_id)
         REFERENCES media (id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT uq_episode_media_season_episode
+        UNIQUE (media_id, season, episode)
 );
 
 CREATE INDEX IF NOT EXISTS idx_episode_media_id ON episode (media_id);
-CREATE INDEX IF NOT EXISTS idx_episode_season_episode ON episode (season, episode);
 
 COMMIT;

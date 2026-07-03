@@ -148,7 +148,18 @@ class RegisterDataWorkflow:
                 *(self._analyze_episode(episode, media_id) for episode in episodes)
             )
 
+            seen_keys: set[tuple[int | None, int | None]] = set()
             for episode in analyzed_episodes:
+                key = (episode.get("season"), episode.get("episode"))
+                if key in seen_keys:
+                    self.logger.warning(
+                        "Skipping duplicate episode",
+                        media_id=media_id,
+                        season=key[0],
+                        episode=key[1],
+                    )
+                    continue
+                seen_keys.add(key)
                 episode_obj = Episode(**episode)
                 self.session.add(episode_obj)
 

@@ -1,0 +1,76 @@
+:root {
+  /* Cores */
+  --sf-bg: #0f0f11;
+  --sf-hero-base: #0a0a0c;
+  --sf-surface: #18181b;
+  --sf-surface-input: #0f0f11;
+  --sf-border: rgba(255, 255, 255, 0.08);
+  --sf-border-input: rgba(255, 255, 255, 0.16);
+  --sf-text: #f5f5f7;
+  --sf-text-2: #d4d4d8;
+  --sf-text-3: #a1a1aa;
+  --sf-label: #71717a;
+  --sf-label-2: #52525b;
+  --sf-accent: #e50914;
+  --sf-accent-hover: #f6121d;
+  --sf-gold: #f5c518;
+  --sf-success: #26d07c;
+  --sf-warn: #f5b301;
+  --sf-nav-idle: #8a8a91;
+  --sf-nav-active: #f5f5f7;
+  --sf-top5-stroke: #3a3a40;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--sf-bg);
+}
+
+#app {
+  min-height: 100vh;
+  background: var(--sf-bg);
+  color: var(--sf-text);
+  font-family: "Manrope", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Barra de rolagem das fileiras */
+.sf-row::-webkit-scrollbar {
+  height: 8px;
+}
+.sf-row::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+}
+.sf-row::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+select.sf-select option {
+  background: #1b1b1f;
+  color: #f5f5f7;
+}
+
+/* Padding horizontal padrão das telas (responsivo) */
+.sf-gutter {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+@media (max-width: 640px) {
+  .sf-gutter {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}

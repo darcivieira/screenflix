@@ -1,6 +1,6 @@
-volumes:
-  db-data:
-  redis-data:
+#volumes:
+#  db-data:
+#  redis-data:
 
 services:
   db:
@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - db-data:/var/lib/postgresql/data
+#      - db-data:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5532:5432"
@@ -20,32 +20,32 @@ services:
       timeout: 5s
       retries: 3
 
-  redis:
-    image: redis:8-alpine
-    ports:
-      - "6679:6379"
-    volumes:
-      - redis-data:/data
-    command: redis-server --appendonly yes
-
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runtime
-    ports:
-      - "8000:8000"
-    env_file: .env
-    environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      - REDIS_URL=redis://redis:6379/0
-    volumes:
-      - ./src:/app/src
-      - ./schemas.json:/app/schemas.json
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    command: uvicorn screenflix.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
+#  redis:
+#    image: redis:8-alpine
+#    ports:
+#      - "6679:6379"
+#    volumes:
+#      - redis-data:/data
+#    command: redis-server --appendonly yes
+#
+#  api:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#      target: runtime
+#    ports:
+#      - "8000:8000"
+#    env_file: .env
+#    environment:
+#      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+#      - REDIS_URL=redis://redis:6379/0
+#    volumes:
+#      - ./src:/app/src
+#      - ./schemas.json:/app/schemas.json
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#      redis:
+#        condition: service_started
+#    command: uvicorn screenflix.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
 
