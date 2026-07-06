@@ -12,7 +12,6 @@ dependencies = [
     "psycopg[binary]>=3.3.3",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.1",
-    "redis[hiredis]>=7.4.0",
     "sqlalchemy[asyncio]>=2.0.48",
     "structlog>=25.5.0",
     "tenacity>=9.1.4",
@@ -82,7 +81,7 @@ warn_return_any = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-module = ["testcontainers.*", "redis.*"]
+module = ["testcontainers.*"]
 ignore_missing_imports = true
 
 # ── Pytest ──────────────────────────────────────────────────
@@ -93,6 +92,6 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 markers = [
-    "integration: testes que dependem de containers externos (PostgreSQL, Redis)",
+    "integration: testes que dependem de containers externos (PostgreSQL)",
     "slow: testes que demoram mais de 5s",
 ]
