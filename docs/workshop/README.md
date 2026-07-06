@@ -45,17 +45,18 @@ cp .env.example .env   # se existir; senão, criar conforme o roteiro do Dia 1
 ```
 
 > **Observação honesta sobre o repo:** alguns itens do cronograma (ex.: **Makefile**,
-> serviços `api`/`redis` no compose, migrations Alembic, CI) **ainda não existem**
+> persistência do banco no compose, migrations Alembic, CI) **ainda não existem**
 > no repositório — e isso é proposital. Eles viram **exercícios de construção
-> ao vivo** durante o workshop. Cada roteiro sinaliza claramente o que existe hoje
-> versus o que será criado em sala.
+> ao vivo** durante o workshop. (O serviço `api` já está ativo no compose e o
+> `redis`, antes reservado, foi removido por falta de uso — exemplo de YAGNI.)
+> Cada roteiro sinaliza claramente o que existe hoje versus o que será criado em sala.
 
 ## Mapa de arquivos-chave usados nos roteiros
 
 ```
 screenflix/
 ├── Dockerfile                 # Dia 1 — build multi-stage, non-root, healthcheck
-├── docker-compose.yml         # Dia 1 — db (Postgres); api/redis comentados
+├── docker-compose.yml         # Dia 1 — db (Postgres) + api ativos; sem redis
 ├── scripts/init.sql           # Dia 1 — bootstrap do schema (media, episode)
 ├── pyproject.toml             # Dia 1/2 — deps, dependency-groups, ruff, mypy, pytest
 ├── src/screenflix/            # Dia 2 — Clean Architecture (core + modules/catalog)

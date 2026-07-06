@@ -156,8 +156,8 @@ uv --version
 node --version</code></pre>
 
   <div class="callout note"><span class="tag">Atenção</span>
-  Alguns itens (Makefile, CI, migrations Alembic, serviços <code>api</code>/<code>redis</code>
-  no compose) <b>ainda não existem</b> no repositório — de propósito. Eles são construídos
+  Alguns itens (Makefile, CI, migrations Alembic, persistência do banco no compose)
+  <b>ainda não existem</b> no repositório — de propósito. Eles são construídos
   <b>ao vivo</b> como exercícios. A apostila sempre sinaliza o que já existe versus o que criamos.</div>
 </section>
 
@@ -224,9 +224,9 @@ docker images screenflix     # observe o tamanho da imagem final
 docker history screenflix    # veja as camadas geradas</code></pre></div>
 
   <h3>1.3 Orquestrando serviços com docker-compose</h3>
-  <p>O <code>docker-compose.yml</code> descreve os serviços. Hoje, apenas o banco
-  (<code>db</code>) está ativo; <code>api</code> e <code>redis</code> estão comentados —
-  vamos ativá-los ao longo do dia.</p>
+  <p>O <code>docker-compose.yml</code> descreve dois serviços ativos: o banco
+  (<code>db</code>) e a aplicação (<code>api</code>). O <code>api</code> é construído a
+  partir do <code>Dockerfile</code> e sobe só depois do banco estar saudável.</p>
   <pre><code>services:
   db:
     image: postgres:18-alpine
@@ -242,12 +242,30 @@ docker history screenflix    # veja as camadas geradas</code></pre></div>
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
-      retries: 3</code></pre>
+      retries: 3
 
-  <p><b>Conceitos:</b> <code>image</code> (imagem pronta) vs <code>build</code> (constrói do
-  Dockerfile); variáveis <code>${...}</code> vindas do <code>.env</code>; o volume que monta
-  <code>scripts/init.sql</code> e é executado pelo Postgres na primeira inicialização
-  (cria as tabelas <code>media</code> e <code>episode</code>).</p>
+  api:
+    build:                 # constrói do Dockerfile (não usa imagem pronta)
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./src:/app/src     # bind-mount → hot-reload em dev
+      - ./schemas.json:/app/schemas.json
+    depends_on:
+      db:
+        condition: service_healthy    # só sobe após o banco ficar saudável
+    command: uvicorn screenflix.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src</code></pre>
+
+  <p><b>Conceitos:</b> <code>image</code> (imagem pronta, no <code>db</code>) vs
+  <code>build</code> (constrói do Dockerfile, no <code>api</code>); variáveis
+  <code>${...}</code> e <code>env_file</code> vindas do <code>.env</code>; o volume que monta
+  <code>scripts/init.sql</code>, executado pelo Postgres na primeira inicialização (cria as
+  tabelas <code>media</code> e <code>episode</code>); e o <code>depends_on ... service_healthy</code>,
+  que faz o <code>api</code> esperar o healthcheck do banco antes de subir.</p>
 
   <h4>Crie o arquivo <code>.env</code> na raiz (não versionado)</h4>
   <pre><code>POSTGRES_USER=screenflix
@@ -260,17 +278,21 @@ SCREENFLIX_DATABASE_URL=postgresql+asyncpg://screenflix:screenflix@db:5432/scree
 SCREENFLIX_OPENAI_API_KEY=sk-...     # placeholder no workshop
 SCREENFLIX_OMDB_API_KEY=...          # placeholder no workshop</code></pre>
 
-  <div class="callout demo"><span class="tag">Demonstração — subir só o banco</span>
-  <pre style="margin:.5em 0 0"><code>docker compose up -d db
-docker compose logs -f db     # veja o init.sql rodando
-docker compose exec db psql -U screenflix -d screenflix -c "\dt"</code></pre></div>
+  <div class="callout demo"><span class="tag">Demonstração — subir o stack</span>
+  <pre style="margin:.5em 0 0"><code>docker compose up --build          # sobe db + api
+docker compose logs -f db          # veja o init.sql rodando
+docker compose exec db psql -U screenflix -d screenflix -c "\dt"
+curl http://localhost:8000/healthz # a api já responde</code></pre></div>
 
   <div class="callout exercise"><span class="tag">Mãos à obra</span>
-  Descomente os blocos <code>api</code> e <code>redis</code> no <code>docker-compose.yml</code>
-  e suba o stack completo com <code>docker compose up --build</code>. Depois valide com
-  <code>curl http://localhost:8000/healthz</code>. Note que o serviço <code>api</code> usa
-  <code>volumes: ./src:/app/src</code> + <code>--reload</code> para hot-reload em
-  desenvolvimento — o mesmo Dockerfile serve dev e prod.</div>
+  O serviço <code>db</code> hoje <b>não persiste dados</b> — o volume nomeado
+  <code>db-data</code> está comentado no topo do arquivo. Habilite a persistência:
+  descomente <code>volumes: db-data:</code> e adicione
+  <code>- db-data:/var/lib/postgresql/data</code> ao serviço <code>db</code>. Suba, registre
+  uma mídia, derrube com <code>docker compose down</code> (sem <code>-v</code>) e confirme
+  que os dados sobrevivem ao reiniciar. Note também que o serviço <code>api</code> usa
+  <code>volumes: ./src:/app/src</code> + <code>--reload</code> para hot-reload — o mesmo
+  Dockerfile serve dev e prod.</div>
 
   <h3>1.4 Comandos essenciais (cheat sheet)</h3>
   <table>
@@ -331,7 +353,7 @@ clean:       ## Limpa containers/volumes/imagens
   <h4>Resumo do Dia 1</h4>
   <ul>
     <li>Container = ambiente reproduzível; o Dockerfile <b>multi-stage</b> entrega imagem enxuta, non-root e com healthcheck.</li>
-    <li><b>docker-compose</b> orquestra app + banco + cache; <code>init.sql</code> faz o bootstrap do schema.</li>
+    <li><b>docker-compose</b> orquestra app (<code>api</code>) + banco (<code>db</code>); <code>init.sql</code> faz o bootstrap do schema.</li>
     <li>O <b>Makefile</b> padroniza comandos e espelha os quality gates.</li>
   </ul>
 </section>

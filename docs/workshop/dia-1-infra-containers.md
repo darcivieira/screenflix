@@ -11,7 +11,7 @@ Ao final do dia, o participante será capaz de:
 
 1. Explicar **por que** usamos containers em aplicações modernas (paridade dev/prod, isolamento, reprodutibilidade).
 2. Ler e escrever um **Dockerfile multi-stage** otimizado (imagem enxuta, non-root, healthcheck).
-3. Orquestrar múltiplos serviços com **docker-compose** (app + banco + cache).
+3. Orquestrar múltiplos serviços com **docker-compose** (app + banco).
 4. Dominar os **comandos** essenciais do dia a dia (`build`, `up`, `logs`, `exec`, `down`).
 5. Encapsular esses comandos em um **Makefile** para padronizar o fluxo do time.
 
@@ -30,7 +30,7 @@ Ao final do dia, o participante será capaz de:
 |-------|-------|----------|
 | 1 | 0–10 min | Abertura: por que containers? O problema que resolvem |
 | 2 | 10–30 min | Dockerfile do ScreenFlix (multi-stage, dissecado linha a linha) |
-| 3 | 30–50 min | docker-compose: subindo o Postgres + ativando `api`/`redis` |
+| 3 | 30–50 min | docker-compose: subindo o stack (`db` + `api`) e persistência |
 | 4 | 50–70 min | Comandos essenciais na prática (build, logs, exec, healthcheck) |
 | 5 | 70–88 min | **Hands-on:** criar um Makefile para o projeto |
 | 6 | 88–90 min | Fechamento e gancho para o Dia 2 |
@@ -118,7 +118,12 @@ Mudar essa rota quebraria o healthcheck — é um contrato de infra, não só de
 
 **Arquivo:** [`docker-compose.yml`](../../docker-compose.yml)
 
-**Estado atual do repo (importante!):** hoje **só o serviço `db` está ativo**. Os serviços `api` e `redis`, e os volumes nomeados, estão **comentados**. Isso é ótimo material didático: começamos com o mínimo e vamos *ativando* serviços ao vivo.
+**Estado atual do repo:** o compose tem **dois serviços ativos** — `db` (Postgres) e `api` (a aplicação, construída do `Dockerfile`). O volume nomeado de persistência do banco (`db-data`) ainda está **comentado** — bom gancho para o exercício de persistência mais adiante.
+
+> **Nota histórica (bom ponto de discussão):** originalmente o compose reservava um serviço
+> `redis` para cache/fila. Ele foi **removido** do projeto (serviço, volume e a dependência
+> `redis[hiredis]` no `pyproject.toml`) por ainda não ter uso real — um exemplo prático de
+> **YAGNI** ("You Aren't Gonna Need It"): não carregue infraestrutura que você não usa.
 
 ```yaml
 services:
@@ -129,6 +134,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
+#      - db-data:/var/lib/postgresql/data      # persistência (comentado — exercício!)
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5532:5432"
@@ -137,15 +143,32 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./src:/app/src                # bind-mount → hot-reload em dev
+      - ./schemas.json:/app/schemas.json
+    depends_on:
+      db:
+        condition: service_healthy    # espera o banco ficar saudável
+    command: uvicorn screenflix.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
 ```
 
 **Conceitos a extrair deste bloco:**
 
-- **`image` vs `build`** — `db` usa imagem pronta; o serviço `api` (comentado) usa `build: { context: ., dockerfile: Dockerfile, target: runtime }`.
-- **Variáveis de ambiente** — vêm de `${POSTGRES_USER}` etc. → precisam de um `.env`.
+- **`image` vs `build`** — `db` usa imagem pronta; o `api` usa `build: { context: ., dockerfile: Dockerfile, target: runtime }` (reaproveita o Dockerfile do Bloco 2).
+- **Variáveis de ambiente** — vêm de `${POSTGRES_USER}` e do `env_file: .env` → precisam de um `.env`.
 - **Volume de bootstrap** — `./scripts/init.sql` é montado em `/docker-entrypoint-initdb.d/`, e o Postgres executa esse SQL na **primeira** inicialização. Abrir o [`scripts/init.sql`](../../scripts/init.sql) e mostrar a criação das tabelas `media` e `episode` (com índices, CHECK constraint e FK `ON DELETE CASCADE`).
 - **Port mapping** — `5532:5432` (host:container) — escolhido para não conflitar com um Postgres local na 5432.
-- **`healthcheck` com `pg_isready`** — e o `depends_on: { db: { condition: service_healthy } }` do serviço `api` (comentado) garante ordem de subida.
+- **`healthcheck` + `depends_on ... service_healthy`** — o `api` só sobe depois que o `pg_isready` do banco passa. Ordem de subida garantida.
+- **Bind-mount + `--reload`** — o `api` monta `./src` e roda com `--reload`: código editado no host recarrega no container (fluxo de dev).
 
 **Criar o `.env` (ao vivo):**
 ```bash
@@ -161,7 +184,7 @@ SCREENFLIX_OPENAI_API_KEY=sk-...        # placeholder no workshop
 SCREENFLIX_OMDB_API_KEY=...             # placeholder no workshop
 ```
 
-> **Demonstração ao vivo — subir só o banco:**
+> **Demonstração ao vivo — subir só o banco primeiro:**
 > ```bash
 > docker compose up -d db
 > docker compose ps
@@ -169,17 +192,25 @@ SCREENFLIX_OMDB_API_KEY=...             # placeholder no workshop
 > docker compose exec db psql -U screenflix -d screenflix -c "\dt"   # listar tabelas
 > ```
 
-### Mini-exercício guiado: ativar `api` e `redis`
+### Mini-exercício guiado: stack completo + persistência
 
-Descomentar os blocos `api` e `redis` no `docker-compose.yml` e subir o stack completo:
+Subir o stack completo (db + api já vêm ativos) e validar a API:
 
 ```bash
 docker compose up --build
-# api em :8000, db em :5532, redis em :6679
+# api em :8000, db em :5532
 curl http://localhost:8000/healthz
 ```
 
-**Discussão:** o serviço `api` comentado usa `volumes: - ./src:/app/src` + `--reload` para hot-reload em dev. Contraste: **imagem imutável (prod)** vs **bind-mount com reload (dev)** — o mesmo Dockerfile serve aos dois modos.
+Depois, **habilitar a persistência do banco** (hoje desligada): descomentar
+`db-data:` no topo do arquivo e a linha `- db-data:/var/lib/postgresql/data` no
+serviço `db`. Subir, registrar uma mídia, `docker compose down` (sem `-v`) e
+confirmar que os dados sobrevivem ao reiniciar.
+
+**Discussão:** o serviço `api` usa `volumes: - ./src:/app/src` + `--reload` para
+hot-reload em dev. Contraste: **imagem imutável (prod)** vs **bind-mount com reload
+(dev)** — o mesmo Dockerfile serve aos dois modos. E sem o volume `db-data`, os dados
+do Postgres vivem só dentro do container — some ao recriá-lo.
 
 ---
 
@@ -301,7 +332,7 @@ make check      # espelha os quality gates do AI-CONFIG.json
 
 **Resumo do dia:**
 - Container = ambiente reproduzível; **Dockerfile multi-stage** entrega imagem enxuta, non-root e com healthcheck.
-- **docker-compose** orquestra app + banco + cache; `init.sql` faz o bootstrap do schema.
+- **docker-compose** orquestra app (`api`) + banco (`db`); `init.sql` faz o bootstrap do schema.
 - **Makefile** padroniza os comandos e espelha os quality gates.
 
 **Gancho para o Dia 2:** "Hoje empacotamos a aplicação. Amanhã vamos *abrir a caixa*
@@ -315,7 +346,7 @@ Architecture — usando o mesmo ScreenFlix."
 | Item | Estado no repo | Ação no workshop |
 |------|----------------|------------------|
 | `Dockerfile` | ✅ Existe (multi-stage, non-root, healthcheck) | Dissecar |
-| `docker-compose.yml` | ⚠️ Só `db` ativo; `api`/`redis` comentados | Ativar ao vivo |
+| `docker-compose.yml` | ✅ `db` + `api` ativos; `redis` removido (YAGNI); volume `db-data` comentado | Subir stack; ligar persistência |
 | `scripts/init.sql` | ✅ Existe (tabelas `media`/`episode`) | Mostrar bootstrap |
 | `.env` | ❌ Não versionado (`.gitignore`) | Criar em sala |
 | **Makefile** | ❌ **Não existe** | **Criar como hands-on** |
