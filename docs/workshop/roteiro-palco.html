@@ -1,0 +1,769 @@
+<title>Roteiro de Palco — Workshop ScreenFlix</title>
+<style>
+:root{
+  /* neutrals — carvão levemente quente (viés para o vermelho de marca) */
+  --ground:#0E0D10; --surface:#161418; --surface-2:#201D24; --surface-3:#2a2630;
+  --line:#2c2831; --line-soft:#221f28;
+  --ink:#F4F1F3; --ink-soft:#C6BFC8; --ink-mut:#8E8794;
+  /* semânticas fixas */
+  --say:#FF3B44; --say-bg:#241014; --say-line:#4a1c20;
+  --ask:#42C4EE; --ask-bg:#0e2530; --ask-line:#164152;
+  --do:#EDB14A; --do-bg:#241d0e; --do-line:#4a3c18;
+  --warn:#F6845E;
+  /* acentos por dia */
+  --d1:#E50914; --d2:#8C6BFF; --d3:#2FBF71;
+  --accent:var(--d1);
+  --read: 1;               /* multiplicador de tamanho de leitura */
+  --font-display:"Helvetica Neue",Arial,system-ui,sans-serif;
+  --font-body:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --maxw:1180px;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --ground:#F3F0F2; --surface:#FFFFFF; --surface-2:#F6F3F5; --surface-3:#ECE7EB;
+    --line:#e2dce1; --line-soft:#ece7eb;
+    --ink:#1a1620; --ink-soft:#40384a; --ink-mut:#736b7c;
+    --say:#C50A14; --say-bg:#fdeef0; --say-line:#f2c6cb;
+    --ask:#0E7FA6; --ask-bg:#eaf6fb; --ask-line:#bfe4f1;
+    --do:#9A6C12; --do-bg:#faf3e3; --do-line:#ecdcb3;
+    --warn:#C0552F;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E0D10; --surface:#161418; --surface-2:#201D24; --surface-3:#2a2630;
+  --line:#2c2831; --line-soft:#221f28;
+  --ink:#F4F1F3; --ink-soft:#C6BFC8; --ink-mut:#8E8794;
+  --say:#FF3B44; --say-bg:#241014; --say-line:#4a1c20;
+  --ask:#42C4EE; --ask-bg:#0e2530; --ask-line:#164152;
+  --do:#EDB14A; --do-bg:#241d0e; --do-line:#4a3c18; --warn:#F6845E;
+}
+:root[data-theme="light"]{
+  --ground:#F3F0F2; --surface:#FFFFFF; --surface-2:#F6F3F5; --surface-3:#ECE7EB;
+  --line:#e2dce1; --line-soft:#ece7eb;
+  --ink:#1a1620; --ink-soft:#40384a; --ink-mut:#736b7c;
+  --say:#C50A14; --say-bg:#fdeef0; --say-line:#f2c6cb;
+  --ask:#0E7FA6; --ask-bg:#eaf6fb; --ask-line:#bfe4f1;
+  --do:#9A6C12; --do-bg:#faf3e3; --do-line:#ecdcb3; --warn:#C0552F;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{transition:none!important;} }
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font-body);
+  line-height:1.55;-webkit-font-smoothing:antialiased;}
+a{color:var(--ask);}
+
+/* ---------- Top control bar ---------- */
+.bar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--ground) 88%, transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+.bar-in{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;gap:14px;
+  padding:10px 20px;flex-wrap:wrap;}
+.brand{display:flex;align-items:baseline;gap:9px;margin-right:4px;}
+.brand .mark{font-family:var(--font-display);font-weight:800;letter-spacing:.16em;
+  font-size:.82rem;color:var(--say);text-transform:uppercase;}
+.brand .sub{font-size:.72rem;color:var(--ink-mut);letter-spacing:.04em;}
+.tabs{display:flex;gap:6px;}
+.tab{font-family:var(--font-display);font-weight:700;letter-spacing:.04em;font-size:.8rem;
+  color:var(--ink-soft);background:transparent;border:1px solid var(--line);
+  padding:7px 13px;border-radius:999px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.tab:hover{border-color:var(--ink-mut);color:var(--ink);}
+.tab[aria-selected="true"]{color:#fff;border-color:transparent;
+  background:var(--accent);box-shadow:0 2px 12px -4px var(--accent);}
+.spacer{flex:1 1 auto;}
+.ctl{display:flex;align-items:center;gap:6px;}
+.btn{font:inherit;font-size:.78rem;color:var(--ink-soft);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
+.btn:hover{border-color:var(--ink-mut);color:var(--ink);}
+.btn:focus-visible,.tab:focus-visible,.blk-link:focus-visible{outline:2px solid var(--ask);outline-offset:2px;}
+.timer{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:.92rem;
+  font-weight:600;color:var(--ink);min-width:58px;text-align:center;letter-spacing:.02em;}
+.timer.run{color:var(--do);}
+.szval{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-mut);min-width:34px;text-align:center;}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px 120px;
+  display:grid;grid-template-columns:246px 1fr;gap:34px;align-items:start;}
+.wrap.intro{grid-template-columns:1fr;max-width:900px;}
+.rail{position:sticky;top:70px;align-self:start;padding-top:26px;}
+.rail h2{font-family:var(--font-display);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-mut);margin:0 0 12px;font-weight:700;}
+.blk-link{display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:start;width:100%;text-align:left;
+  background:transparent;border:0;border-left:2px solid var(--line);cursor:pointer;
+  padding:8px 10px;color:var(--ink-soft);transition:all .15s;font:inherit;border-radius:0 6px 6px 0;}
+.blk-link:hover{background:var(--surface);color:var(--ink);}
+.blk-link.active{border-left-color:var(--accent);background:var(--surface);}
+.blk-link .t{font-family:var(--font-mono);font-size:.68rem;color:var(--ink-mut);padding-top:2px;
+  font-variant-numeric:tabular-nums;white-space:nowrap;}
+.blk-link .n{font-size:.82rem;line-height:1.3;font-weight:600;}
+.blk-link.active .n{color:var(--ink);}
+.blk-link .dot{display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink-mut);
+  margin-left:2px;flex-shrink:0;}
+.blk-link.done .dot{background:var(--d3);border-color:var(--d3);}
+.rail .prog{margin-top:14px;font-size:.72rem;color:var(--ink-mut);font-family:var(--font-mono);}
+
+.main{min-width:0;padding-top:22px;}
+
+/* ---------- Day header ---------- */
+.dayhead{display:flex;align-items:flex-end;gap:16px;padding:14px 0 22px;border-bottom:1px solid var(--line);margin-bottom:8px;}
+.dayhead .num{font-family:var(--font-display);font-weight:800;font-size:3.4rem;line-height:.8;
+  color:var(--accent);letter-spacing:-.02em;}
+.dayhead .meta .k{font-family:var(--font-display);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-mut);font-weight:700;}
+.dayhead .meta h1{font-family:var(--font-display);font-size:1.7rem;margin:.15em 0 .1em;font-weight:800;
+  letter-spacing:-.01em;text-wrap:balance;}
+.dayhead .meta p{margin:0;color:var(--ink-soft);font-size:.9rem;max-width:60ch;}
+
+/* ---------- Block card ---------- */
+.block{padding:30px 0 8px;border-bottom:1px solid var(--line-soft);scroll-margin-top:74px;}
+.block-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px;}
+.tchip{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:.74rem;font-weight:600;
+  color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:7px;
+  padding:5px 9px;white-space:nowrap;flex-shrink:0;margin-top:3px;}
+.block h3{font-family:var(--font-display);font-size:1.32rem;font-weight:800;margin:0;letter-spacing:-.01em;
+  text-wrap:balance;flex:1;}
+.chk{margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  font-size:.72rem;color:var(--ink-mut);user-select:none;padding-top:5px;}
+.chk input{appearance:none;width:17px;height:17px;border:1.5px solid var(--ink-mut);border-radius:5px;
+  cursor:pointer;position:relative;background:transparent;transition:all .15s;}
+.chk input:checked{background:var(--d3);border-color:var(--d3);}
+.chk input:checked::after{content:"";position:absolute;left:5px;top:1.5px;width:4px;height:9px;
+  border:solid #06140c;border-width:0 2px 2px 0;transform:rotate(45deg);}
+.cover{color:var(--ink-soft);font-size:.95rem;margin:2px 0 18px;max-width:66ch;}
+.cover b{color:var(--ink);}
+
+/* panels */
+.panel{border-radius:12px;padding:15px 18px 15px 20px;margin:12px 0;position:relative;border:1px solid var(--line);}
+.panel .lbl{font-family:var(--font-display);font-size:.66rem;letter-spacing:.15em;text-transform:uppercase;
+  font-weight:800;display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+.panel .lbl .ic{width:15px;height:15px;flex-shrink:0;}
+
+.say{background:var(--say-bg);border-color:var(--say-line);border-left:4px solid var(--say);}
+.say .lbl{color:var(--say);}
+.say p{margin:0 0 .7em;font-size:calc(1.1rem * var(--read));line-height:1.62;color:var(--ink);
+  max-width:64ch;text-wrap:pretty;}
+.say p:last-child{margin-bottom:0;}
+.say em{color:var(--say);font-style:normal;font-weight:600;}
+.say .beat{color:var(--ink-mut);font-style:italic;font-size:.9em;}
+
+.ask{background:var(--ask-bg);border-color:var(--ask-line);border-left:4px solid var(--ask);}
+.ask .lbl{color:var(--ask);}
+.ask ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;}
+.ask li{padding-left:20px;position:relative;color:var(--ink);font-size:.98rem;max-width:64ch;}
+.ask li::before{content:"?";position:absolute;left:0;top:-1px;color:var(--ask);font-weight:800;font-family:var(--font-display);}
+
+.do{background:var(--do-bg);border-color:var(--do-line);border-left:4px solid var(--do);}
+.do .lbl{color:var(--do);}
+.do ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px;}
+.do li{color:var(--ink-soft);font-size:.92rem;}
+.do code,.cmd{font-family:var(--font-mono);font-size:.85em;background:rgba(0,0,0,.28);
+  border:1px solid var(--do-line);border-radius:5px;padding:2px 7px;color:var(--do);
+  display:inline-block;}
+:root[data-theme="light"] .do code,:root[data-theme="light"] .cmd{background:#fff;}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .do code,:root:not([data-theme="dark"]) .cmd{background:#fff;}}
+.do li .desc{color:var(--ink-mut);font-size:.9em;}
+
+.watch{display:flex;gap:10px;align-items:flex-start;margin:12px 0 2px;padding:11px 14px;
+  border-radius:10px;background:var(--surface);border:1px dashed var(--warn);}
+.watch .tag{color:var(--warn);font-weight:800;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
+  font-family:var(--font-display);white-space:nowrap;padding-top:2px;}
+.watch p{margin:0;font-size:.9rem;color:var(--ink-soft);}
+
+/* intro / cover section */
+.hero{padding:40px 0 10px;}
+.hero .eyebrow{font-family:var(--font-display);letter-spacing:.2em;text-transform:uppercase;
+  font-size:.72rem;color:var(--say);font-weight:800;}
+.hero h1{font-family:var(--font-display);font-size:2.5rem;font-weight:800;letter-spacing:-.02em;
+  margin:.15em 0 .2em;text-wrap:balance;line-height:1.02;}
+.hero p{color:var(--ink-soft);font-size:1.02rem;max-width:64ch;margin:.2em 0 1.3em;}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 6px;}
+.legend .item{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:9px 13px;font-size:.85rem;color:var(--ink-soft);}
+.legend .sw{width:10px;height:20px;border-radius:3px;flex-shrink:0;}
+.legend b{color:var(--ink);font-weight:700;}
+.tips{margin-top:22px;padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;}
+.tips h4{margin:0 0 8px;font-size:.9rem;font-family:var(--font-display);letter-spacing:.02em;}
+.tips ul{margin:0;padding-left:18px;color:var(--ink-soft);font-size:.88rem;display:flex;flex-direction:column;gap:5px;}
+
+.day-view{display:none;}
+.day-view.on{display:block;animation:fade .25s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.day-view.on{animation:none;}}
+
+.endcap{margin-top:26px;padding:18px 20px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink-soft);font-size:.92rem;}
+.endcap b{color:var(--ink);}
+
+/* responsive */
+@media (max-width:860px){
+  .wrap{grid-template-columns:1fr;gap:0;}
+  .rail{display:none;}
+  .bar-in{gap:9px;padding:9px 14px;}
+  .brand .sub{display:none;}
+  .hide-sm{display:none;}
+}
+@media print{
+  .bar,.rail{display:none;} .wrap{display:block;max-width:none;}
+  .day-view{display:block!important;} .block{break-inside:avoid;}
+  body{background:#fff;color:#111;}
+}
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="brand"><span class="mark">ScreenFlix</span><span class="sub">Roteiro de Palco</span></div>
+    <div class="tabs" role="tablist" aria-label="Dias do workshop">
+      <button class="tab" role="tab" data-day="0" aria-selected="true">Abertura</button>
+      <button class="tab" role="tab" data-day="1" aria-selected="false">Dia 1</button>
+      <button class="tab" role="tab" data-day="2" aria-selected="false">Dia 2</button>
+      <button class="tab" role="tab" data-day="3" aria-selected="false">Dia 3</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="ctl hide-sm">
+      <button class="btn" id="szdown" aria-label="Diminuir texto">A−</button>
+      <span class="szval" id="szval">100%</span>
+      <button class="btn" id="szup" aria-label="Aumentar texto">A+</button>
+    </div>
+    <div class="ctl">
+      <span class="timer" id="timer" aria-live="off">00:00</span>
+      <button class="btn" id="tbtn">▶ Iniciar</button>
+      <button class="btn hide-sm" id="treset" aria-label="Zerar cronômetro">↺</button>
+    </div>
+    <button class="btn" id="theme" aria-label="Alternar tema">◑</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <aside class="rail" id="rail"></aside>
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+const DATA = {
+  intro: {
+    eyebrow: "Guia do apresentador",
+    title: "O que dizer, o que mostrar e o que perguntar — a cada momento",
+    lead: "Este roteiro acompanha você ao vivo. Cada bloco traz o tempo, o que abordar, o texto que você fala (em vermelho), o que perguntar à turma (azul) e o que fazer na tela (âmbar). Use as abas para trocar de dia, o cronômetro para o ritmo e A−/A+ para ajustar o tamanho da leitura.",
+    tips: [
+      "As falas em vermelho são um guia, não uma jaula — fale com naturalidade, no seu tom.",
+      "Toda vez que aparecer um bloco azul, PARE e devolva a pergunta à turma. Silêncio de 3–4 s é normal.",
+      "Os blocos âmbar são ações na tela: tenha o terminal e o editor já abertos no projeto.",
+      "Marque cada bloco como concluído (✓) para não perder o fio; a barra lateral mostra o progresso.",
+      "Cada dia soma ~90 min com folga. Se atrasar, os blocos de hands-on são os primeiros a encurtar."
+    ]
+  },
+  days: [
+    {
+      n:1, accent:"var(--d1)", key:"Infra & Containers",
+      title:"Infra & Containers",
+      subtitle:"Empacotar a aplicação de forma reprodutível — Dockerfile, compose, comandos e Makefile.",
+      blocks:[
+        {
+          t:"0–10", title:"Abertura — por que containers?",
+          cover:"Quebrar o gelo e ancorar o problema que os containers resolvem. Ninguém sai daqui sem entender o <b>porquê</b> antes do <b>como</b>.",
+          say:[
+            "Bom dia, pessoal! Nos próximos três dias a gente vai usar <em>um projeto de verdade</em> — o ScreenFlix, um catálogo de filmes e séries — como fio condutor. Hoje é o dia da infraestrutura: como a gente empacota essa aplicação para que ela rode igual em qualquer lugar.",
+            "Deixa eu começar com uma pergunta honesta. Quem aqui já ouviu — ou já <em>falou</em> — a frase 'na minha máquina funciona'?",
+            "<span class=\"beat\">(deixe rir, levante a mão junto)</span> Pois é. Esse projeto depende de Python 3.13, PostgreSQL 18, umas bibliotecas de sistema, variáveis de ambiente… Sem container, cada pessoa monta isso na mão, e cada máquina vira um floco de neve diferente. O container existe pra matar esse problema: reprodutibilidade, isolamento e paridade entre o que eu testo e o que vai pra produção.",
+            "A ideia do dia é simples: a gente vai pegar esse projeto e, camada por camada, aprender a colocá-lo dentro de containers de um jeito que um time inteiro consiga rodar com um comando só."
+          ],
+          ask:[
+            "Quem aqui já usa Docker no dia a dia? E quem só ouviu falar? (mede o nível da turma)",
+            "Alguém tem uma história de 'funcionava e parou de funcionar' por diferença de ambiente?"
+          ],
+          demo:[
+            "Deixe aberto no editor: <span class=\"cmd\">.python-version</span> (mostra o 3.13) e o <span class=\"cmd\">pyproject.toml</span> (deps como asyncpg/psycopg que exigem libs do sistema).",
+            "Diga: 'é exatamente isso que o Dockerfile vai encapsular'."
+          ],
+          watch:"Não entre em comando nenhum ainda. Este bloco é 100% conversa — o objetivo é criar tensão pelo problema antes de mostrar a solução."
+        },
+        {
+          t:"10–30", title:"O Dockerfile multi-stage",
+          cover:"Dissecar o Dockerfile real do projeto, linha a linha, explicando o <b>porquê</b> de cada decisão: multi-stage, cache de camadas, non-root, healthcheck.",
+          say:[
+            "Abre aqui o Dockerfile do projeto. Repara numa coisa: ele tem <em>duas etapas</em>, dois 'FROM'. Isso se chama build multi-stage, e é um padrão de produção.",
+            "A primeira etapa, o <em>builder</em>, instala as ferramentas pesadas de compilação e monta o ambiente Python. A segunda, o <em>runtime</em>, é a imagem que de fato vai rodar — e ela recebe só o resultado pronto da primeira. Ou seja: todo o peso do compilador fica pra trás. A imagem final é menor e tem menos superfície de ataque.",
+            "Presta atenção nesta ordem aqui: a gente copia o pyproject e o lock <em>antes</em> de copiar o código. Por quê? Cache de camadas. Enquanto as dependências não mudam, o Docker reaproveita essa camada — então alterar uma linha de código não reinstala o mundo inteiro.",
+            "E tem dois detalhes de produção que eu quero que vocês levem pra casa: a gente cria um usuário <em>não-root</em> pra rodar a aplicação, e tem um <em>HEALTHCHECK</em> apontando pro /healthz. Esse healthcheck é um contrato: é assim que o orquestrador sabe se o container está vivo."
+          ],
+          ask:[
+            "Por que vocês acham que o build-essential fica só na primeira etapa e não na imagem final?",
+            "O que aconteceria com o cache se a gente copiasse o código ANTES das dependências?",
+            "Se eu renomear a rota /healthz no código e esquecer do Dockerfile, o que quebra?"
+          ],
+          demo:[
+            "<span class=\"cmd\">docker build -t screenflix:latest .</span> — construa ao vivo enquanto explica.",
+            "<span class=\"cmd\">docker images screenflix</span> — mostre o tamanho da imagem final.",
+            "<span class=\"cmd\">docker history screenflix:latest</span> — mostre as camadas geradas."
+          ],
+          watch:"O build pode demorar. Dispare o comando no começo do bloco e vá explicando o Dockerfile enquanto ele roda — não fique olhando o terminal em silêncio."
+        },
+        {
+          t:"30–50", title:"docker-compose: db + api",
+          cover:"Subir o stack com docker-compose. Explicar image vs build, variáveis de ambiente, o volume de bootstrap (init.sql), healthcheck e depends_on. Contar a história do Redis (YAGNI).",
+          say:[
+            "Um Dockerfile empacota <em>uma</em> imagem. Mas uma aplicação real tem vários serviços. É aí que entra o docker-compose — ele descreve o conjunto: no nosso caso, o banco e a própria API.",
+            "Olha o serviço do banco. Ele usa uma imagem pronta do Postgres. E repara neste volume aqui: a gente monta o <em>init.sql</em> numa pasta especial, e o Postgres executa esse SQL na primeira vez que sobe — é assim que as tabelas media e episode nascem.",
+            "Agora o serviço da API. Diferente do banco, ele não usa imagem pronta: ele <em>constrói</em> do nosso Dockerfile. E tem esse depends_on com condition service_healthy — traduzindo: a API só sobe <em>depois</em> que o banco responde que está saudável. A ordem de subida fica garantida.",
+            "Deixa eu contar uma coisa que mudou no projeto. Antes tinha um serviço de Redis aqui reservado 'pra frente'. A gente <em>removeu</em>. Por quê? Porque não tinha uso real ainda. Isso tem nome: YAGNI — 'You Aren't Gonna Need It'. Não carregue infraestrutura que você não usa; ela custa manutenção e confunde quem chega."
+          ],
+          ask:[
+            "Qual a diferença prática entre 'image' e 'build' num serviço do compose?",
+            "Por que faz sentido a API esperar o healthcheck do banco em vez de subir junto?",
+            "Vocês concordam em remover o Redis? Quando VALERIA a pena deixar algo reservado?"
+          ],
+          demo:[
+            "Crie o <span class=\"cmd\">.env</span> ao vivo (POSTGRES_* e SCREENFLIX_*).",
+            "<span class=\"cmd\">docker compose up -d db</span> depois <span class=\"cmd\">docker compose logs -f db</span> — mostre o init.sql rodando.",
+            "<span class=\"cmd\">docker compose exec db psql -U screenflix -d screenflix -c \"\\dt\"</span> — as tabelas existem.",
+            "<span class=\"cmd\">docker compose up --build</span> e <span class=\"cmd\">curl localhost:8000/healthz</span> — o stack no ar."
+          ],
+          watch:"Se o .env não estiver certo, o compose falha com erro de variável. Tenha um .env de exemplo pronto pra colar e não perder tempo depurando digitação ao vivo."
+        },
+        {
+          t:"50–70", title:"Comandos essenciais na prática",
+          cover:"Passar a régua nos comandos do dia a dia (build, up, logs, exec, down) e fazer o contraste didático: rodar a app SEM Docker para a turma sentir a diferença.",
+          say:[
+            "Agora que o stack está no ar, deixa eu passar a régua nos comandos que vocês vão usar todo dia. Não precisa decorar — no fim do dia a gente encapsula tudo num Makefile.",
+            "Os quatro que você mais usa: <em>up</em> pra subir, <em>logs</em> pra acompanhar, <em>exec</em> pra entrar no container, e <em>down</em> pra derrubar. Repara que 'down' sem o -v preserva os dados; com -v, apaga os volumes. É um ponto clássico de susto.",
+            "E pra vocês <em>sentirem</em> o valor do container, deixa eu fazer o contrário: rodar a aplicação sem Docker. Aqui eu preciso ter o Python 3.13 certo na máquina, um Postgres acessível, as variáveis no lugar… Funciona, mas é a sua máquina virando floco de neve de novo. No compose, tudo isso já vem junto e igual pra todo mundo."
+          ],
+          ask:[
+            "Qual a diferença entre 'docker compose down' e 'down -v'? Quem já se queimou com isso?",
+            "Quando faz sentido rodar a app fora do container, direto com o uv?"
+          ],
+          demo:[
+            "Rode a lista viva: <span class=\"cmd\">docker compose ps</span>, <span class=\"cmd\">logs -f api</span>, <span class=\"cmd\">exec api bash</span>, <span class=\"cmd\">down</span>.",
+            "Contraste: <span class=\"cmd\">uv sync</span> + <span class=\"cmd\">uv run uvicorn screenflix.main:app --reload ...</span> (mesmo resultado, mais pré-requisitos).",
+            "Mostre o healthcheck do container: <span class=\"cmd\">docker inspect --format='{{.State.Health.Status}}' &lt;id&gt;</span>."
+          ],
+          watch:"Cuidado com o tempo: é fácil se empolgar nos comandos. Reserve os últimos ~18 min pro Makefile, que é o hands-on do dia."
+        },
+        {
+          t:"70–88", title:"Makefile — a interface única (ler e estender)",
+          cover:"O projeto JÁ tem um Makefile. Ler a anatomia, entender os alvos por seção, corrigir a ideia de que 'check roda formatação', e fazer o hands-on: adicionar um alvo db-shell.",
+          say:[
+            "Ninguém decora 'uv run uvicorn screenflix ponto main dois pontos app --reload --reload-dir src…'. É aí que entra o Makefile — e a boa notícia é que o projeto <em>já tem um</em>. Ele é a interface única: dev, CI e, no terceiro dia, a IA vão usar os mesmos comandos.",
+            "Olha o topo do arquivo. Tem três coisas que valem ouro: o SHELLFLAGS com '-e -u -o pipefail' faz um alvo <em>abortar no primeiro erro</em> em vez de seguir mascarando falha. O DEFAULT_GOAL igual a help faz o 'make' sozinho mostrar a ajuda. E esse help é auto-documentado: ele varre os comentários de duas cerquilhas do próprio arquivo.",
+            "Os alvos são organizados por seção: setup, dev, qualidade, docker, frontend e limpeza. Presta atenção na parte de qualidade: o <em>check</em> é o nosso CI local — ele roda lint, tipos e testes. A formatação fica num alvo à parte, de propósito. E os testes são fatiados pelos markers: tem test-unit pros unitários e test-integration pros que sobem container.",
+            "Agora vem o hands-on. O Makefile ainda não tem um atalho pra abrir o psql no banco. Vamos adicionar juntos um alvo db-shell — e prestem atenção num detalhe: variável de shell dentro do Make precisa de cifrão duplo, senão o Make tenta interpolar antes da hora."
+          ],
+          ask:[
+            "Por que o 'check' NÃO inclui a formatação? Que problema isso evitaria num CI?",
+            "Que outro alvo faria sentido pra este projeto? (guie até algo como 'db-shell' ou 'logs de um serviço')",
+            "Qual a vantagem de o 'make help' ler os comentários do próprio arquivo?"
+          ],
+          demo:[
+            "<span class=\"cmd\">make</span> (mostra o help via DEFAULT_GOAL), depois <span class=\"cmd\">make check</span>.",
+            "Adicione ao Makefile, na seção Docker: <span class=\"cmd\">db-shell: ## Abre o psql &nbsp; $(COMPOSE) exec db psql -U $$POSTGRES_USER -d $$POSTGRES_DB</span>",
+            "Rode <span class=\"cmd\">make help</span> e mostre o novo alvo aparecendo <b>ordenado</b> (por causa do sort)."
+          ],
+          watch:"A armadilha do cifrão duplo ($$) é o erro nº 1 de quem começa com Makefile. Erre de propósito com um cifrão só, mostre o erro, e conserte — fixa muito melhor."
+        },
+        {
+          t:"88–90", title:"Fechamento e gancho para o Dia 2",
+          cover:"Amarrar o dia em três frases e plantar a curiosidade para o Dia 2.",
+          say:[
+            "Fechando: hoje a gente aprendeu a <em>empacotar</em>. O Dockerfile multi-stage entrega uma imagem enxuta, non-root e com healthcheck. O compose orquestra a API e o banco. E o Makefile virou a interface única do time.",
+            "Amanhã a gente <em>abre a caixa</em>. Se hoje foi sobre empacotar a aplicação, o Dia 2 é sobre como o código está organizado <em>por dentro</em> — ambientes modulares e Clean Architecture, usando o mesmo ScreenFlix. Descansem, que amanhã tem código."
+          ],
+          ask:[
+            "Antes de sair: o que mais surpreendeu vocês hoje? (colhe 2–3 respostas rápidas)"
+          ]
+        }
+      ]
+    },
+    {
+      n:2, accent:"var(--d2)", key:"Programação Pragmática",
+      title:"Programação Pragmática",
+      subtitle:"Como o código se organiza por dentro — ambientes modulares e Clean Architecture, sem dogmatismo.",
+      blocks:[
+        {
+          t:"0–8", title:"A tese: arquitetura serve à mudança",
+          cover:"Estabelecer o tom do dia: arquitetura não é enfeite, é o que torna a mudança barata e segura. Apresentar 'monólito modular em camadas'.",
+          say:[
+            "Bom dia! Ontem a gente empacotou. Hoje a gente abre a caixa e olha como o código está organizado por dentro. E eu quero começar desarmando uma ideia: arquitetura não é enfeite, não é sobre ser bonito. Arquitetura existe pra tornar a mudança <em>barata e segura</em>.",
+            "A palavra-chave do dia é <em>pragmática</em>. A gente vai aplicar princípios — Clean Architecture, modularidade — mas na medida certa, sem virar refém de dogma. O ScreenFlix se descreve como um 'monólito modular em camadas': um único deploy, simples de operar, mas bem organizado por dentro, fácil de evoluir. Pra maioria dos times, esse é o ponto ideal antes de sequer pensar em microsserviços."
+          ],
+          ask:[
+            "Pra vocês, o que é 'código bem arquitetado'? (colha 2–3 definições e volte a elas no fim do dia)",
+            "Quem aqui já mexeu num código onde uma mudança simples exigia tocar em dez lugares?"
+          ]
+        },
+        {
+          t:"8–28", title:"Ambientes modulares",
+          cover:"Mostrar que a app lê configuração de fora (pydantic-settings + .env no backend; VITE_API_BASE no frontend). Fail fast, segredos no ambiente.",
+          say:[
+            "Primeiro conceito: ambiente modular. A ideia é que a aplicação <em>não sabe</em> onde ela roda. Ela só lê configuração de fora. Assim, a mesma imagem que a gente construiu ontem roda em dev, em teste e em produção — muda só a configuração.",
+            "Abre o settings do projeto. Repara: é uma classe do pydantic-settings, com um prefixo SCREENFLIX_. Cada campo é tipado. E tem campos <em>sem</em> valor padrão — como a URL do banco e as chaves de API. Isso é de propósito: se faltar, a aplicação nem sobe. Isso se chama <em>fail fast</em> — o erro aparece na inicialização, não vira um bug misterioso lá na frente.",
+            "E os segredos? Nunca no código. Vêm do ambiente, e o .env está no gitignore. Isso não é preciosismo — é a diferença entre vazar ou não vazar uma chave no repositório.",
+            "No frontend a filosofia é idêntica: a URL da API vem de uma variável do Vite. E tem um detalhe elegante: se ela estiver vazia, o app entra em 'modo demonstração' e roda offline, sem quebrar a tela. Configuração injetada de fora, com fallback seguro — dos dois lados."
+          ],
+          ask:[
+            "O que é melhor: a app subir com um default silencioso, ou falhar na hora por falta de config? Por quê?",
+            "Onde vocês já viram segredo commitado por engano? Como evitar isso no fluxo do time?"
+          ],
+          demo:[
+            "Abra <span class=\"cmd\">core/settings.py</span> e aponte os campos obrigatórios vs com default.",
+            "Ao vivo: apague <span class=\"cmd\">SCREENFLIX_DATABASE_URL</span> do .env e tente subir — mostre o erro de validação do Pydantic. Depois restaure.",
+            "Mostre <span class=\"cmd\">frontend/src/api/screenflix.js</span> — o VITE_API_BASE e o modo demo."
+          ],
+          watch:"O 'fail fast' ao vivo é o momento mais didático do bloco. Faça questão de quebrar de propósito e mostrar a mensagem clara do Pydantic."
+        },
+        {
+          t:"28–40", title:"O mapa das camadas",
+          cover:"Dar a visão de topo: core/ (transversal) vs modules/catalog/ (negócio), e as quatro camadas. Mostrar que o main.py é fino.",
+          say:[
+            "Antes de mergulhar, deixa eu dar o mapa. O código se divide em dois grandes blocos. O <em>core</em> guarda o que é transversal — configuração, banco, logging, o repositório genérico. E o <em>modules</em> guarda o negócio; hoje tem um módulo só, o catalog.",
+            "Dentro do módulo, quatro camadas: <em>domain</em> com as entidades, <em>application</em> com os casos de uso e serviços, <em>infrastructure</em> com os repositórios, e <em>presentation</em> com a API. Guardem esses quatro nomes — a gente vai visitar cada um.",
+            "E olha uma coisa bonita: o main.py, o ponto de entrada, é <em>fininho</em>. Ele só monta logging, CORS, um middleware e pluga o router. Toda a lógica mora nos módulos. Isso é sinal de saúde: o entrypoint não deve saber regra de negócio."
+          ],
+          ask:[
+            "Se eu fosse criar um módulo novo — digamos, 'usuários' — onde ele entraria? (resposta: modules/users, replicando as camadas)",
+            "Por que 'utilidades compartilhadas' devem ficar no core e não dentro de um módulo?"
+          ],
+          demo:[
+            "Mostre a árvore <span class=\"cmd\">src/screenflix/</span> — core/ ao lado de modules/catalog/.",
+            "Abra o <span class=\"cmd\">main.py</span> e mostre como ele é curto."
+          ]
+        },
+        {
+          t:"40–68", title:"Clean Architecture, camada por camada",
+          cover:"O coração do dia. Percorrer domain → application → infrastructure → presentation seguindo um request real, e chegar na regra de dependência.",
+          say:[
+            "Agora o coração do dia. Vamos percorrer as camadas de dentro pra fora, seguindo um pedido de verdade.",
+            "Começa no <em>domain</em>: as entidades Media e Episode. É o coração do negócio. Só um aviso pragmático — aqui elas são modelos do ORM, não objetos puros. Num livro de Clean Architecture 'purista' isso seria pecado. O time trocou pureza por menos código repetido. Isso é uma decisão consciente, e é ótimo pra discutir.",
+            "Sobe pra <em>application</em>. Aqui tem dois personagens: o <em>service</em>, que faz operações simples e reutilizáveis, tipo listar o top 5; e o <em>use case</em>, que orquestra um objetivo de negócio inteiro. O 'RegisterDataWorkflow' é o melhor exemplo: ele busca na OMDb, normaliza com a OpenAI limitando a concorrência, salva mídia e episódios em paralelo, e no fim faz commit — ou rollback se algo falhar. Tudo numa transação.",
+            "A <em>infrastructure</em> é onde vivem os repositórios. Tem uma base genérica com get, list, count — e os repositórios concretos só adicionam as consultas específicas. Isola o acesso a dados do resto.",
+            "E a <em>presentation</em>: o endpoint. Repara como ele é <em>fino</em> — valida a entrada, delega pro serviço, devolve. A injeção de dependência encadeia sessão do banco, serviço e endpoint. E o response_model garante que a saída sempre bate com o contrato.",
+            "Junta tudo e você chega na regra de ouro: as dependências apontam <em>para dentro</em>. Presentation depende de application, que depende de domain. Nunca o contrário. E — grava isso — endpoint <em>nunca</em> fala direto com o banco. Sempre passa por serviço e repositório."
+          ],
+          ask:[
+            "Qual a diferença, na prática, entre um 'service' e um 'use case'?",
+            "As entidades serem modelos do ORM: vocês topam esse trade-off, ou pagariam o preço da pureza? Em que projeto mudaria?",
+            "Se um endpoint precisar de um dado novo, em qual camada vocês mexem primeiro?"
+          ],
+          demo:[
+            "Rastreie <span class=\"cmd\">GET /api/v1/media/movies/top5</span> abrindo, na ordem: endpoint → service → repository → entidade.",
+            "Rode de verdade: <span class=\"cmd\">curl -s localhost:8000/api/v1/media/movies/top5 | jq</span>.",
+            "Abra o <span class=\"cmd\">register_data_workflow.py</span> e mostre o commit/rollback."
+          ],
+          watch:"Este é o bloco mais longo (28 min). Não leia arquivo por arquivo em silêncio — conte a jornada do request como uma história, sempre voltando à regra de dependência."
+        },
+        {
+          t:"68–82", title:"Mãos à obra — respeitar as camadas",
+          cover:"Exercício guiado: adicionar GET /media/count (ou rastrear o top5) respeitando as camadas. A regra de ouro é não consultar o banco no endpoint.",
+          say:[
+            "Chega de slide, vamos codar. O exercício é adicionar um endpoint que devolve a contagem de mídias. Parece bobo, mas o pulo do gato é <em>onde</em> cada coisa vai.",
+            "Primeiro, o método count no serviço, usando o repositório. Depois, o handler fino na presentation, que só delega. Um DTO do Pydantic pra resposta. E — porque este projeto exige — testes: caminho feliz e caminho de erro.",
+            "A regra de ouro do exercício: se alguém tentar fazer a query direto no endpoint, a gente para e volta pra regra de dependência. É exatamente esse o reflexo que eu quero que vocês construam."
+          ],
+          ask:[
+            "Onde entra a validação do parâmetro? E onde entra o tratamento de erro HTTP?",
+            "Por que devolver um DTO em vez da entidade crua? (contrato, versionamento, não vazar campos internos)"
+          ],
+          demo:[
+            "Implemente com a turma: <span class=\"cmd\">count()</span> no MediaService → handler em <span class=\"cmd\">enpoints/media.py</span> → DTO.",
+            "Valide com os gates do projeto: <span class=\"cmd\">make check</span>."
+          ],
+          watch:"Se a turma for mais júnior, faça o rastreio do top5 em vez de escrever código novo — cobre os mesmos conceitos com menos risco de travar no tempo."
+        },
+        {
+          t:"82–90", title:"Trade-offs pragmáticos e gancho",
+          cover:"Fechar com os pontos onde o projeto escolheu pragmatismo (ORM no domínio, register fire-and-forget, top5 no front) e plantar o Dia 3.",
+          say:[
+            "Pra fechar, quero ser honesto sobre onde este projeto escolheu pragmatismo em vez de pureza. As entidades são ORM. O registro de mídia é 'dispara e esquece' — responde na hora e processa em background, sem fila durável; é dívida consciente. E o top 5, no frontend, é calculado no cliente mesmo existindo endpoint pronto.",
+            "A mensagem que eu quero deixar: Clean Architecture é um <em>espectro</em>, não um checklist. O valor está em ter camadas com responsabilidades claras e dependências controladas — e em saber, conscientemente, onde relaxar.",
+            "E o gancho pra amanhã: vocês repararam que o repositório tem uma pasta 'agents' e um arquivo AGENTS.md? O time codificou todas essas regras de arquitetura como <em>contexto pra IA</em>. Amanhã a gente vê como o Claude Code usa isso — com Skills, subagents e times de agentes — pra desenvolver respeitando exatamente essas camadas."
+          ],
+          ask:[
+            "Dessas três escolhas pragmáticas, qual vocês manteriam e qual atacariam primeiro? Por quê?"
+          ]
+        }
+      ]
+    },
+    {
+      n:3, accent:"var(--d3)", key:"IA no Desenvolvimento",
+      title:"IA no Desenvolvimento",
+      subtitle:"Fazer a IA respeitar a infra do Dia 1 e a arquitetura do Dia 2 — Claude Code, Skills, Subagents e Agent Teams.",
+      blocks:[
+        {
+          t:"0–10", title:"Claude Code e o insight do ScreenFlix",
+          cover:"Apresentar o Claude Code e revelar o insight: o repo já tem uma camada de contexto para IA (AGENTS.md, AI-CONFIG.json, /agents). O dia é traduzir isso em artefatos nativos.",
+          say:[
+            "Último dia! Hoje a gente junta tudo: como usar IA no desenvolvimento de um jeito <em>disciplinado</em> — fazendo a IA respeitar a infra de ontem e a arquitetura de hoje.",
+            "O Claude Code é um agente que roda no terminal, lê o repositório, edita arquivos, roda comandos — sempre seguindo o contexto e as regras que você define. Mas aqui tem um insight que torna este projeto especial: ele <em>já foi construído pensando em IA</em>.",
+            "Olha o AGENTS.md e o AI-CONFIG.json. O time escreveu regras de arquitetura, quality gates, guardrails — tudo isso como contexto pra ferramentas de IA. O detalhe é que isso é genérico, agnóstico de ferramenta. O Claude Code não lê o AGENTS.md sozinho. Então o trabalho de hoje é <em>traduzir</em> esse contexto genérico em artefatos nativos do Claude Code: CLAUDE.md, Skills, Subagents e, no limite, times de agentes."
+          ],
+          ask:[
+            "Quem aqui já usa uma ferramenta de IA pra codar? Qual, e pra quê?",
+            "Qual o maior medo de vocês com IA no código? (guie pra 'ela ignora nossos padrões' — que é o que vamos resolver)"
+          ],
+          demo:[
+            "Abra <span class=\"cmd\">AGENTS.md</span> e <span class=\"cmd\">AI-CONFIG.json</span> — mostre os guardrails e a seção quality_checks.",
+            "Liste a pasta <span class=\"cmd\">agents/</span> — os 7 guias de domínio."
+          ]
+        },
+        {
+          t:"10–25", title:"CLAUDE.md — a memória do projeto",
+          cover:"Explicar o CLAUDE.md, onde vive, e o ponto-chave: o Claude Code lê CLAUDE.md, não AGENTS.md. Reaproveitar o que existe importando com @.",
+          say:[
+            "O primeiro artefato é o CLAUDE.md. É o arquivo que o Claude Code lê no começo de <em>toda</em> sessão — convenções, comandos, padrões. Ele sobrevive até a conversa ser compactada, porque é relido do disco.",
+            "Aqui está o ponto que confunde todo mundo: o Claude Code lê o <em>CLAUDE.md</em>, e não o AGENTS.md. Como este projeto já investiu num AGENTS.md rico e numa pasta agents inteira, a jogada certa não é copiar tudo de novo — é <em>importar</em>. A gente cria um CLAUDE.md curto que puxa o AGENTS.md com um arroba, e adiciona as regras rápidas por cima.",
+            "O efeito é imediato: quando eu peço uma mudança, o Claude já entra na conversa sabendo das camadas, dos gates e da regra de não tocar no banco pela presentation."
+          ],
+          ask:[
+            "Qual a diferença entre botar isso num CLAUDE.md versus repetir no prompt toda vez?",
+            "O que vale a pena estar SEMPRE no contexto, e o que é melhor carregar sob demanda?"
+          ],
+          demo:[
+            "Crie um <span class=\"cmd\">CLAUDE.md</span> com <span class=\"cmd\">@AGENTS.md</span> + 4 regras rápidas.",
+            "Inicie o <span class=\"cmd\">claude</span> e pergunte: 'onde eu adiciono um endpoint pra listar por gênero?' — mostre a resposta respeitando as camadas."
+          ],
+          watch:"Se não der pra rodar o Claude Code ao vivo na sala, tenha um print/gravação curto da resposta pronta. Nunca dependa 100% de rede na hora."
+        },
+        {
+          t:"25–45", title:"Skills — encapsulando procedimentos",
+          cover:"O que é uma Skill, onde vive, como vira /comando. Construir a skill /quality-gate a partir do AI-CONFIG. Mencionar hooks para tornar automático.",
+          say:[
+            "Segundo artefato: Skills. Uma Skill é um procedimento reutilizável que a IA carrega <em>sob demanda</em> — ela só ocupa contexto quando é usada. E vira um comando com barra, tipo /quality-gate.",
+            "Olha que encaixe perfeito: o AI-CONFIG.json já lista os quality gates bloqueantes do projeto — formatação, lint, tipos, testes. A gente transforma exatamente isso numa Skill. Em vez de lembrar quatro comandos, o dev — ou o próprio Claude — chama /quality-gate, e ele roda na ordem, parando no primeiro que falhar.",
+            "E se você quiser que isso seja <em>automático</em>, sem depender de ninguém lembrar, existe o hook: um comando que dispara sozinho num evento, tipo ao encerrar uma tarefa. Skill é sob demanda; hook é automático. A máquina executa o hook, não o modelo."
+          ],
+          ask:[
+            "Skill versus só escrever no CLAUDE.md 'sempre rode os testes' — qual a vantagem da Skill?",
+            "Que outro procedimento do time viraria uma boa Skill? (deploy, criar módulo, revisar PR...)"
+          ],
+          demo:[
+            "Crie <span class=\"cmd\">.claude/skills/quality-gate/SKILL.md</span> com os 4 comandos do AI-CONFIG.",
+            "Rode <span class=\"cmd\">/quality-gate</span> na sessão.",
+            "Mostre um hook no <span class=\"cmd\">.claude/settings.json</span> (evento Stop)."
+          ]
+        },
+        {
+          t:"45–70", title:"Subagents — especialistas por domínio",
+          cover:"O maior bloco. O que é um subagent, onde vive, como o Claude delega. Traduzir os 7 guias de /agents em subagents (o 'time' do projeto). Skill vs Subagent.",
+          say:[
+            "Agora o coração do dia: Subagents. Um subagent é um trabalhador <em>isolado</em>, com contexto próprio e ferramentas próprias. O Claude principal <em>delega</em> uma tarefa pra ele com base na descrição, ele roda do zero e devolve o resultado.",
+            "E aqui a mágica acontece. Lembram dos sete guias na pasta agents — backend, banco, segurança, qa, arquitetura? Hoje eles são só <em>documentos</em>. A gente vai transformar cada um num subagent <em>de verdade</em>. O guia de QA vira um qa-reviewer que exige testes. O de segurança vira um security-check que falha fechado. O de arquitetura vira um architect que protege as camadas.",
+            "Deixa eu mostrar o mais poderoso: eu peço 'adicione um endpoint pra listar gêneros, com testes'. E o Claude <em>delega</em> — chama o backend-dev pro código, o database-dev pra query, o qa-reviewer pros testes. Cada um carregando só o guia do seu domínio. É a pasta agents ganhando vida.",
+            "Fixando a diferença: a Skill roda na conversa principal, é um procedimento. O Subagent roda isolado, com contexto próprio, e é um especialista. Um é um passo; o outro é uma pessoa do time."
+          ],
+          ask:[
+            "Por que sete especialistas isolados são melhores que um AGENTS.md gigante num contexto só?",
+            "Que ferramentas o qa-reviewer NÃO deveria ter? (ele não precisa escrever/deletar — só ler e rodar teste)",
+            "No time de vocês, quais papéis virariam subagents naturais?"
+          ],
+          demo:[
+            "Crie <span class=\"cmd\">.claude/agents/qa-reviewer.md</span> a partir do agents/qa-guidelines.md (name, description, tools, model).",
+            "Peça uma mudança e mostre o Claude delegando aos especialistas.",
+            "Mostre a tabela guia→subagent (architect, backend-dev, database-dev, security-check, qa-reviewer)."
+          ],
+          watch:"É o bloco de 25 min — o mais importante do dia. Se o tempo apertar em outro lugar, proteja este. A demonstração da delegação é o momento 'uau'."
+        },
+        {
+          t:"70–85", title:"Agent Teams — orquestração multi-agente",
+          cover:"Apresentar Agent Teams como a evolução (experimental!). Comparar com subagents. Deixar claro que é direção do futuro, não produção estável.",
+          say:[
+            "Penúltimo bloco: Agent Teams. E eu vou ser transparente logo de cara — isso é <em>experimental</em>, desligado por padrão. Trato como direção do futuro, não como fluxo de produção estável.",
+            "A diferença pros subagents é a coordenação. Subagent reporta de volta pro principal, que gerencia tudo. Num time, os agentes são independentes, compartilham uma lista de tarefas, e <em>conversam entre si</em>. Um vira o líder, os outros são companheiros de equipe, cada um com sua própria janela de contexto.",
+            "A regra prática que eu quero deixar: comece simples. Pra mudança focada, um subagent — ou só o Claude principal — resolve. Time é pra trabalho amplo, paralelizável, com partes que dependem umas das outras. O ScreenFlix, sendo um monólito modular, raramente precisa disso — mas é um ótimo laboratório pra <em>entender</em> o conceito."
+          ],
+          ask:[
+            "Quando um 'time de agentes' compensaria o overhead? Dê um exemplo do trabalho de vocês.",
+            "Que riscos vocês veem em vários agentes editando o mesmo código em paralelo?"
+          ],
+          demo:[
+            "Mostre a tabela comparativa Subagents × Agent Teams (comunicação, coordenação, uso ideal).",
+            "Exemplo de invocação em linguagem natural: 'monte um time pra feature X — um implementa, um testa, um revisa segurança'."
+          ],
+          watch:"Não venda Agent Teams como pronto. A honestidade sobre 'experimental' aumenta sua credibilidade — a turma confia mais no resto."
+        },
+        {
+          t:"85–90", title:"Síntese dos três dias",
+          cover:"Costurar a jornada inteira: empacotar (Dia 1) → arquitetar (Dia 2) → IA disciplinada (Dia 3). Os artefatos de IA fazem cumprir a arquitetura.",
+          say:[
+            "Chegamos ao fim. Deixa eu costurar os três dias numa frase cada. Dia 1: a gente aprendeu a <em>empacotar</em> a aplicação. Dia 2: a organizar ela <em>por dentro</em>. E hoje: a desenvolver <em>com IA de forma disciplinada</em>.",
+            "E a costura mais bonita é esta: os artefatos de IA de hoje <em>fazem cumprir</em> a arquitetura de ontem e a infra de anteontem. O qa-reviewer exige os testes. O architect protege as camadas. A skill /quality-gate roda os gates. O contexto de engenharia virou contexto executável de IA.",
+            "Vocês saem daqui com um projeto que sabem empacotar, arquitetar e desenvolver com IA — usando um único código como fio condutor. Muito obrigado, pessoal. Bora pra prática."
+          ],
+          ask:[
+            "Uma coisa que cada um vai aplicar no próximo projeto? (dê a volta rápida na sala pra fechar)"
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+/* ---------------- render ---------------- */
+const main = document.getElementById('main');
+const rail = document.getElementById('rail');
+const tabs = [...document.querySelectorAll('.tab')];
+const icoSay='M3 5h18v11H8l-4 4z', icoAsk='M12 3a9 9 0 100 18 9 9 0 000-18z', icoDo='M5 3l14 9-14 9z';
+
+function esc(s){return s;}
+function panelSay(arr){
+  return `<div class="panel say"><div class="lbl"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="${icoSay}"/></svg>Você fala</div>${arr.map(p=>`<p>${p}</p>`).join('')}</div>`;
+}
+function panelAsk(arr){
+  return `<div class="panel ask"><div class="lbl"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>Pergunte à turma</div><ul>${arr.map(q=>`<li>${q}</li>`).join('')}</ul></div>`;
+}
+function panelDo(arr){
+  return `<div class="panel do"><div class="lbl"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="${icoDo}"/></svg>Faça na tela</div><ul>${arr.map(d=>`<li>${d}</li>`).join('')}</ul></div>`;
+}
+function watchBox(w){ return `<div class="watch"><span class="tag">Atenção</span><p>${w}</p></div>`; }
+
+function renderIntro(){
+  const i=DATA.intro;
+  const legend=`<div class="legend">
+    <div class="item"><span class="sw" style="background:var(--say)"></span><b>Você fala</b> — o texto</div>
+    <div class="item"><span class="sw" style="background:var(--ask)"></span><b>Pergunte</b> — à turma</div>
+    <div class="item"><span class="sw" style="background:var(--do)"></span><b>Faça</b> — na tela</div>
+  </div>`;
+  return `<section class="day-view on" data-day="0"><div class="hero">
+    <div class="eyebrow">${i.eyebrow}</div>
+    <h1>${i.title}</h1>
+    <p>${i.lead}</p>
+    ${legend}
+    <div class="tips"><h4>Como conduzir</h4><ul>${i.tips.map(t=>`<li>${t}</li>`).join('')}</ul></div>
+  </div></section>`;
+}
+
+function renderDay(day, di){
+  const blocks = day.blocks.map((b,bi)=>{
+    const id=`d${di}b${bi}`;
+    return `<section class="block" id="${id}" data-idx="${bi}">
+      <div class="block-top">
+        <span class="tchip">${b.t} min</span>
+        <h3>${b.title}</h3>
+        <label class="chk"><input type="checkbox" data-done="${id}"> feito</label>
+      </div>
+      ${b.cover?`<p class="cover">${b.cover}</p>`:''}
+      ${b.say?panelSay(b.say):''}
+      ${b.ask?panelAsk(b.ask):''}
+      ${b.demo?panelDo(b.demo):''}
+      ${b.watch?watchBox(b.watch):''}
+    </section>`;
+  }).join('');
+  const endcap = di===3
+    ? `<div class="endcap">🎬 <b>Fim.</b> Feche agradecendo e convide pra prática. Material de apoio: apostila e slides em <code>docs/workshop/</code>.</div>`
+    : `<div class="endcap"><b>Fim do Dia ${day.n}.</b> Confira o cronômetro e o gancho para o próximo dia antes de encerrar.</div>`;
+  return `<section class="day-view" data-day="${di}" style="--accent:${day.accent}">
+    <div class="dayhead">
+      <div class="num">${day.n}</div>
+      <div class="meta"><div class="k">Dia ${day.n} · 1h30</div><h1>${day.title}</h1><p>${day.subtitle}</p></div>
+    </div>
+    ${blocks}
+    ${endcap}
+  </section>`;
+}
+
+main.innerHTML = renderIntro() + DATA.days.map((d,i)=>renderDay(d,i+1)).join('');
+
+/* rail (block nav) per day */
+function buildRail(di){
+  if(di===0){ rail.innerHTML=''; return; }
+  const day=DATA.days[di-1];
+  const links=day.blocks.map((b,bi)=>{
+    const id=`d${di}b${bi}`;
+    return `<button class="blk-link" data-goto="${id}"><span class="t">${b.t}</span><span class="n">${b.title}<span class="dot" data-dot="${id}"></span></span></button>`;
+  }).join('');
+  rail.innerHTML = `<h2>Dia ${day.n} — blocos</h2>${links}<div class="prog" id="prog"></div>`;
+  syncDots(); syncProg(di);
+}
+
+/* ---------- state: done checkboxes ---------- */
+const KEY='sf-stage-done';
+let done={};
+try{ done=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ done={}; }
+function saveDone(){ try{ localStorage.setItem(KEY,JSON.stringify(done)); }catch(e){} }
+function applyDone(){
+  document.querySelectorAll('input[data-done]').forEach(cb=>{
+    cb.checked = !!done[cb.dataset.done];
+    const blk=cb.closest('.block'); if(blk) blk.classList.toggle('is-done',cb.checked);
+  });
+}
+function syncDots(){
+  document.querySelectorAll('[data-dot]').forEach(d=>{
+    const link=d.closest('.blk-link');
+    if(link) link.classList.toggle('done', !!done[d.dataset.dot]);
+  });
+}
+function syncProg(di){
+  const day=DATA.days[di-1]; if(!day) return;
+  const total=day.blocks.length;
+  let c=0; day.blocks.forEach((b,bi)=>{ if(done[`d${di}b${bi}`]) c++; });
+  const el=document.getElementById('prog'); if(el) el.textContent=`${c}/${total} blocos concluídos`;
+}
+main.addEventListener('change',e=>{
+  const cb=e.target.closest('input[data-done]'); if(!cb) return;
+  done[cb.dataset.done]=cb.checked; if(!cb.checked) delete done[cb.dataset.done];
+  saveDone(); syncDots(); syncProg(currentDay);
+});
+
+/* ---------- day switching ---------- */
+let currentDay=0;
+function showDay(di){
+  currentDay=di;
+  document.querySelectorAll('.day-view').forEach(v=>v.classList.toggle('on', +v.dataset.day===di));
+  tabs.forEach(t=>t.setAttribute('aria-selected', (+t.dataset.day===di)?'true':'false'));
+  document.querySelector('.wrap').classList.toggle('intro', di===0);
+  buildRail(di);
+  window.scrollTo({top:0,behavior:'auto'});
+}
+tabs.forEach(t=>t.addEventListener('click',()=>showDay(+t.dataset.day)));
+
+/* rail navigation + scrollspy */
+rail.addEventListener('click',e=>{
+  const b=e.target.closest('[data-goto]'); if(!b) return;
+  const el=document.getElementById(b.dataset.goto);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+});
+let spy;
+window.addEventListener('scroll',()=>{
+  if(currentDay===0) return;
+  cancelAnimationFrame(spy);
+  spy=requestAnimationFrame(()=>{
+    const blocks=[...document.querySelectorAll(`.day-view[data-day="${currentDay}"] .block`)];
+    let act=blocks[0];
+    for(const b of blocks){ if(b.getBoundingClientRect().top<=120) act=b; }
+    document.querySelectorAll('.blk-link').forEach(l=>l.classList.toggle('active', l.dataset.goto===act?.id));
+  });
+},{passive:true});
+
+/* ---------- reading size ---------- */
+let read=100;
+const szval=document.getElementById('szval');
+function setRead(v){ read=Math.max(80,Math.min(150,v)); document.documentElement.style.setProperty('--read',(read/100).toFixed(2)); szval.textContent=read+'%'; }
+document.getElementById('szup').onclick=()=>setRead(read+10);
+document.getElementById('szdown').onclick=()=>setRead(read-10);
+
+/* ---------- timer ---------- */
+let secs=0,tick=null;
+const tEl=document.getElementById('timer'),tBtn=document.getElementById('tbtn');
+function fmt(s){ const m=String(Math.floor(s/60)).padStart(2,'0'); return m+':'+String(s%60).padStart(2,'0'); }
+function render(){ tEl.textContent=fmt(secs); }
+tBtn.onclick=()=>{
+  if(tick){ clearInterval(tick); tick=null; tBtn.textContent='▶ Continuar'; tEl.classList.remove('run'); }
+  else{ tick=setInterval(()=>{secs++;render();},1000); tBtn.textContent='⏸ Pausar'; tEl.classList.add('run'); }
+};
+document.getElementById('treset').onclick=()=>{ secs=0;render(); if(tick){clearInterval(tick);tick=null;tBtn.textContent='▶ Iniciar';tEl.classList.remove('run');} };
+
+/* ---------- theme toggle ---------- */
+const themeBtn=document.getElementById('theme');
+function currentTheme(){
+  const explicit=document.documentElement.getAttribute('data-theme');
+  if(explicit) return explicit;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+}
+themeBtn.onclick=()=>{
+  const next=currentTheme()==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+};
+
+/* init */
+applyDone();
+render();
+showDay(0);
+</script>
