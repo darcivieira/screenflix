@@ -349,21 +349,22 @@ code_box(s, Inches(0.6), Inches(2.15), Inches(6.0), Inches(4.4), [
     ("docker compose exec db psql ...", TXT),
     ("docker compose down", TXT),
     ("", TXT),
-    ("# Com Makefile vira:", MUTED),
-    ("make up      make check", OK),
-    ("make dev     make build", OK),
+    ("# O projeto tem Makefile:", MUTED),
+    ("make dev       make up-build", OK),
+    ("make check     make front-dev", OK),
 ], size=14)
 card(s, Inches(6.85), Inches(2.15), Inches(5.85), Inches(4.4),
      "Makefile — interface única",
-     ["Ninguém decora o comando longo do",
-      "uvicorn. Com Makefile vira make dev.",
+     ["Já existe no repo. Ninguém decora o",
+      "comando longo do uvicorn → make dev.",
       "",
-      "• make help → documentação executável",
-      "• make check → roda os quality gates",
-      "  (ruff format, ruff check, mypy, pytest)",
+      "• .DEFAULT_GOAL=help (self-documented)",
+      "• Seções: setup · dev · qualidade ·",
+      "  docker · frontend · limpeza",
+      "• make check = CI local (lint+types+test)",
+      "• test-unit / test-integration (markers)",
       "",
-      "⚠ NÃO existe ainda no repo:",
-      "   criá-lo é o hands-on do dia."],
+      "Hands-on: estender com make db-shell."],
      accent=BRAND, body_size=13)
 
 # ══════════════════════════════════════════════════════════════
@@ -579,5 +580,7 @@ txt(s, Inches(0.95), Inches(3.75), Inches(11.5), Inches(0.6),
 txt(s, Inches(0.95), Inches(4.6), Inches(11.5), Inches(0.5),
     [[R("Material completo:  ", 14, MUTED), R("docs/workshop/ (roteiros + apostila)", 14, ACCENT, True, MONO)]])
 
-prs.save("/home/user/screenflix/scratchpad/ScreenFlix-Workshop.pptx")
+import os
+_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ScreenFlix-Workshop.pptx")
+prs.save(_OUT)
 print("OK — slides:", len(prs.slides._sldIdLst))

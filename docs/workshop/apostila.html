@@ -156,9 +156,10 @@ uv --version
 node --version</code></pre>
 
   <div class="callout note"><span class="tag">Atenção</span>
-  Alguns itens (Makefile, CI, migrations Alembic, persistência do banco no compose)
-  <b>ainda não existem</b> no repositório — de propósito. Eles são construídos
-  <b>ao vivo</b> como exercícios. A apostila sempre sinaliza o que já existe versus o que criamos.</div>
+  Alguns itens (CI, migrations Alembic, persistência do banco no compose) <b>ainda não
+  existem</b> no repositório — de propósito. Eles são construídos/estendidos <b>ao vivo</b>
+  como exercícios (o <b>Makefile</b> já existe — nós o lemos, usamos e estendemos). A
+  apostila sempre sinaliza o que já existe versus o que criamos.</div>
 </section>
 
 <!-- ══════════════ DIA 1 ══════════════ -->
@@ -307,54 +308,50 @@ curl http://localhost:8000/healthz # a api já responde</code></pre></div>
     <tr><td>Parar e apagar volumes</td><td><code>docker compose down -v</code></td></tr>
   </table>
 
-  <h3>1.5 Makefile — padronizando o fluxo</h3>
-  <div class="callout note"><span class="tag">Atenção</span> O repositório <b>ainda não tem
-  um Makefile</b> — criá-lo é o exercício central do dia. Ninguém decora
-  <code>uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000</code>;
-  com Makefile isso vira <code>make dev</code>.</div>
+  <h3>1.5 Makefile — a interface única do projeto</h3>
+  <p>O projeto <b>já traz</b> um <code>Makefile</code> completo. Ninguém decora
+  <code>uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000</code>
+  — com o Makefile isso vira <code>make dev</code>. Ele é a <b>interface única</b> para dev, CI e IA (Dia 3).</p>
 
-  <div class="callout exercise"><span class="tag">Mãos à obra — criar o Makefile</span></div>
-  <pre><code>.PHONY: help install dev up up-build down logs format lint type test check build clean
+  <p>O topo do arquivo traz configurações que valem discussão:</p>
+  <pre><code>SHELL := bash
+.SHELLFLAGS := -eu -o pipefail -c   # falha cedo: erro em qualquer etapa aborta o alvo
+COMPOSE := docker compose           # variável → um só lugar para trocar
+.DEFAULT_GOAL := help               # `make` sem argumento mostra a ajuda
 
-help:        ## Lista os alvos
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-	  | awk 'BEGIN{FS=":.*?## "};{printf "  \033[36m%-12s\033[0m %s\n",$$1,$$2}'
-install:     ## Instala dependências (com dev)
-	uv sync --dev
-dev:         ## API local com hot-reload
-	uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000
-up:          ## Sobe o stack
-	docker compose up -d
-up-build:    ## Sobe reconstruindo
-	docker compose up --build
-down:        ## Derruba o stack
-	docker compose down
-logs:        ## Logs da api
-	docker compose logs -f api
-format:      ## Formata
-	uv run ruff format .
-lint:        ## Lint
-	uv run ruff check .
-type:        ## Tipos
-	uv run mypy src
-test:        ## Testes
-	uv run pytest
-check: format lint type test   ## Roda todos os quality gates
-build:       ## Imagem de produção
-	docker build -t screenflix:latest .
-clean:       ## Limpa containers/volumes/imagens
-	docker compose down -v &amp;&amp; docker image prune -f</code></pre>
-  <p>Agora <code>make help</code> lista tudo, e <code>make check</code> roda os quatro
-  <b>quality gates</b> do projeto (formatação, lint, tipos, testes) — os mesmos que a IA
-  usará no Dia 3.</p>
+help: ## Mostra esta ajuda      (varre os comentários ## do próprio arquivo)
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort \
+		| awk 'BEGIN{FS=":.*?## "};{printf "  \033[36m%-18s\033[0m %s\n",$$1,$$2}'</code></pre>
+
+  <p>Os alvos são organizados por seção:</p>
+  <table>
+    <tr><th>Seção</th><th>Alvos</th></tr>
+    <tr><td>Setup</td><td><code>install</code> (uv sync) · <code>lock</code></td></tr>
+    <tr><td>Dev</td><td><code>dev</code> (API com reload) · <code>shell</code> (REPL do projeto)</td></tr>
+    <tr><td>Qualidade</td><td><code>lint</code> · <code>format</code> · <code>format-check</code> · <code>typecheck</code> · <code>test</code> · <code>test-unit</code> · <code>test-integration</code> · <code>check</code></td></tr>
+    <tr><td>Docker</td><td><code>up</code> · <code>up-build</code> · <code>down</code> · <code>build</code> · <code>logs</code> · <code>ps</code> · <code>restart</code></td></tr>
+    <tr><td>Frontend</td><td><code>front-install</code> · <code>front-dev</code> · <code>front-build</code> · <code>front-preview</code></td></tr>
+    <tr><td>Limpeza</td><td><code>clean</code> (remove caches de pytest/mypy/ruff)</td></tr>
+  </table>
+  <p>Destaques da seção Qualidade: <code>check: lint typecheck test</code> é o <b>CI local</b>
+  (formatação fica no alvo à parte <code>format</code>/<code>format-check</code>); e os testes
+  são fatiados pelos <b>markers</b> do <code>pyproject.toml</code> — <code>test-unit</code>
+  (<code>-m "not integration"</code>) e <code>test-integration</code> (<code>-m integration</code>).</p>
+
+  <div class="callout exercise"><span class="tag">Mãos à obra — estender o Makefile</span>
+  O Makefile não tem um atalho para o <code>psql</code>. Adicione, na seção Docker, um alvo
+  <code>db-shell</code> e confirme que ele aparece <b>ordenado</b> em <code>make help</code>:
+  <pre style="margin:.5em 0 0"><code>db-shell: ## Abre o psql no banco
+	$(COMPOSE) exec db psql -U $${POSTGRES_USER} -d $${POSTGRES_DB}</code></pre></div>
   <div class="callout note"><span class="tag">Armadilha do Make</span> variáveis de shell
-  precisam de <code>$$</code> (ex.: <code>$${POSTGRES_USER}</code>) para o Make não interpolá-las.</div>
+  precisam de <code>$$</code> (ex.: <code>$${POSTGRES_USER}</code>) para o Make não interpolá-las
+  — quem resolve é o shell, em runtime.</div>
 
   <h4>Resumo do Dia 1</h4>
   <ul>
     <li>Container = ambiente reproduzível; o Dockerfile <b>multi-stage</b> entrega imagem enxuta, non-root e com healthcheck.</li>
     <li><b>docker-compose</b> orquestra app (<code>api</code>) + banco (<code>db</code>); <code>init.sql</code> faz o bootstrap do schema.</li>
-    <li>O <b>Makefile</b> padroniza comandos e espelha os quality gates.</li>
+    <li>O <b>Makefile</b> é a interface única (dev, qualidade, docker, frontend); <code>make check</code> é o CI local.</li>
   </ul>
 </section>
 
