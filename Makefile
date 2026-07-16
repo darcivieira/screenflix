@@ -99,6 +99,10 @@ ps: ## Lista o status dos serviços
 restart: ## Reinicia os serviços
 	$(COMPOSE) restart
 
+.PHONY: db-shell
+db-shell: ## Abre um psql no banco (usa as credenciais do container)
+	$(COMPOSE) exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"'
+
 # ── Frontend ────────────────────────────────────────────────
 .PHONY: front-install
 front-install: ## Instala as dependências do frontend

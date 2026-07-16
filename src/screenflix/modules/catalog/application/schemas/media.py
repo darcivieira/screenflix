@@ -12,6 +12,9 @@ class MediaBaseSchema(BaseModel):
     rating: float
     plot: str
 
+class MediaCountSchema(BaseModel):
+    total: int
+
 class EpisodeBaseSchema(BaseModel):
     id: int
     original_title: str
