@@ -11,9 +11,9 @@ Ao final do dia, o participante será capaz de:
 
 1. Explicar **por que** usamos containers em aplicações modernas (paridade dev/prod, isolamento, reprodutibilidade).
 2. Ler e escrever um **Dockerfile multi-stage** otimizado (imagem enxuta, non-root, healthcheck).
-3. Orquestrar múltiplos serviços com **docker-compose** (app + banco + cache).
+3. Orquestrar múltiplos serviços com **docker-compose** (app + banco).
 4. Dominar os **comandos** essenciais do dia a dia (`build`, `up`, `logs`, `exec`, `down`).
-5. Encapsular esses comandos em um **Makefile** para padronizar o fluxo do time.
+5. Entender e usar o **Makefile** do projeto (e estendê-lo) para padronizar o fluxo do time.
 
 ## ✅ Pré-requisitos
 
@@ -30,9 +30,9 @@ Ao final do dia, o participante será capaz de:
 |-------|-------|----------|
 | 1 | 0–10 min | Abertura: por que containers? O problema que resolvem |
 | 2 | 10–30 min | Dockerfile do ScreenFlix (multi-stage, dissecado linha a linha) |
-| 3 | 30–50 min | docker-compose: subindo o Postgres + ativando `api`/`redis` |
+| 3 | 30–50 min | docker-compose: subindo o stack (`db` + `api`) e persistência |
 | 4 | 50–70 min | Comandos essenciais na prática (build, logs, exec, healthcheck) |
-| 5 | 70–88 min | **Hands-on:** criar um Makefile para o projeto |
+| 5 | 70–88 min | Makefile do projeto: ler, entender e **estender** (hands-on) |
 | 6 | 88–90 min | Fechamento e gancho para o Dia 2 |
 
 ---
@@ -118,7 +118,12 @@ Mudar essa rota quebraria o healthcheck — é um contrato de infra, não só de
 
 **Arquivo:** [`docker-compose.yml`](../../docker-compose.yml)
 
-**Estado atual do repo (importante!):** hoje **só o serviço `db` está ativo**. Os serviços `api` e `redis`, e os volumes nomeados, estão **comentados**. Isso é ótimo material didático: começamos com o mínimo e vamos *ativando* serviços ao vivo.
+**Estado atual do repo:** o compose tem **dois serviços ativos** — `db` (Postgres) e `api` (a aplicação, construída do `Dockerfile`). O volume nomeado de persistência do banco (`db-data`) ainda está **comentado** — bom gancho para o exercício de persistência mais adiante.
+
+> **Nota histórica (bom ponto de discussão):** originalmente o compose reservava um serviço
+> `redis` para cache/fila. Ele foi **removido** do projeto (serviço, volume e a dependência
+> `redis[hiredis]` no `pyproject.toml`) por ainda não ter uso real — um exemplo prático de
+> **YAGNI** ("You Aren't Gonna Need It"): não carregue infraestrutura que você não usa.
 
 ```yaml
 services:
@@ -129,6 +134,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
+#      - db-data:/var/lib/postgresql/data      # persistência (comentado — exercício!)
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5532:5432"
@@ -137,15 +143,32 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./src:/app/src                # bind-mount → hot-reload em dev
+      - ./schemas.json:/app/schemas.json
+    depends_on:
+      db:
+        condition: service_healthy    # espera o banco ficar saudável
+    command: uvicorn screenflix.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
 ```
 
 **Conceitos a extrair deste bloco:**
 
-- **`image` vs `build`** — `db` usa imagem pronta; o serviço `api` (comentado) usa `build: { context: ., dockerfile: Dockerfile, target: runtime }`.
-- **Variáveis de ambiente** — vêm de `${POSTGRES_USER}` etc. → precisam de um `.env`.
+- **`image` vs `build`** — `db` usa imagem pronta; o `api` usa `build: { context: ., dockerfile: Dockerfile, target: runtime }` (reaproveita o Dockerfile do Bloco 2).
+- **Variáveis de ambiente** — vêm de `${POSTGRES_USER}` e do `env_file: .env` → precisam de um `.env`.
 - **Volume de bootstrap** — `./scripts/init.sql` é montado em `/docker-entrypoint-initdb.d/`, e o Postgres executa esse SQL na **primeira** inicialização. Abrir o [`scripts/init.sql`](../../scripts/init.sql) e mostrar a criação das tabelas `media` e `episode` (com índices, CHECK constraint e FK `ON DELETE CASCADE`).
 - **Port mapping** — `5532:5432` (host:container) — escolhido para não conflitar com um Postgres local na 5432.
-- **`healthcheck` com `pg_isready`** — e o `depends_on: { db: { condition: service_healthy } }` do serviço `api` (comentado) garante ordem de subida.
+- **`healthcheck` + `depends_on ... service_healthy`** — o `api` só sobe depois que o `pg_isready` do banco passa. Ordem de subida garantida.
+- **Bind-mount + `--reload`** — o `api` monta `./src` e roda com `--reload`: código editado no host recarrega no container (fluxo de dev).
 
 **Criar o `.env` (ao vivo):**
 ```bash
@@ -161,7 +184,7 @@ SCREENFLIX_OPENAI_API_KEY=sk-...        # placeholder no workshop
 SCREENFLIX_OMDB_API_KEY=...             # placeholder no workshop
 ```
 
-> **Demonstração ao vivo — subir só o banco:**
+> **Demonstração ao vivo — subir só o banco primeiro:**
 > ```bash
 > docker compose up -d db
 > docker compose ps
@@ -169,17 +192,25 @@ SCREENFLIX_OMDB_API_KEY=...             # placeholder no workshop
 > docker compose exec db psql -U screenflix -d screenflix -c "\dt"   # listar tabelas
 > ```
 
-### Mini-exercício guiado: ativar `api` e `redis`
+### Mini-exercício guiado: stack completo + persistência
 
-Descomentar os blocos `api` e `redis` no `docker-compose.yml` e subir o stack completo:
+Subir o stack completo (db + api já vêm ativos) e validar a API:
 
 ```bash
 docker compose up --build
-# api em :8000, db em :5532, redis em :6679
+# api em :8000, db em :5532
 curl http://localhost:8000/healthz
 ```
 
-**Discussão:** o serviço `api` comentado usa `volumes: - ./src:/app/src` + `--reload` para hot-reload em dev. Contraste: **imagem imutável (prod)** vs **bind-mount com reload (dev)** — o mesmo Dockerfile serve aos dois modos.
+Depois, **habilitar a persistência do banco** (hoje desligada): descomentar
+`db-data:` no topo do arquivo e a linha `- db-data:/var/lib/postgresql/data` no
+serviço `db`. Subir, registrar uma mídia, `docker compose down` (sem `-v`) e
+confirmar que os dados sobrevivem ao reiniciar.
+
+**Discussão:** o serviço `api` usa `volumes: - ./src:/app/src` + `--reload` para
+hot-reload em dev. Contraste: **imagem imutável (prod)** vs **bind-mount com reload
+(dev)** — o mesmo Dockerfile serve aos dois modos. E sem o volume `db-data`, os dados
+do Postgres vivem só dentro do container — some ao recriá-lo.
 
 ---
 
@@ -203,10 +234,11 @@ Tabela de referência (rodar cada um ao vivo):
 
 **Comparação didática — rodar a app SEM Docker** (para o participante sentir a diferença):
 ```bash
-uv sync --dev
+uv sync                # ou: make install
 uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000
+# atalho equivalente do projeto:  make dev
 ```
-Discutir: aqui você precisa do Python 3.13 e de um Postgres acessível na máquina. No compose, tudo já vem junto.
+Discutir: aqui você precisa do Python 3.13 e de um Postgres acessível na máquina. No compose, tudo já vem junto. (No Bloco 5 vemos como o `Makefile` encapsula esses comandos.)
 
 **Verificando o healthcheck do container:**
 ```bash
@@ -215,85 +247,90 @@ docker inspect --format='{{.State.Health.Status}}' <container_id>
 
 ---
 
-## Bloco 5 — Hands-on: criar um Makefile (70–88 min)
+## Bloco 5 — Makefile: ler, entender e estender (70–88 min)
 
-> **Observação:** o repositório **ainda não tem um Makefile**. Este é o exercício
-> central do dia — encapsular os comandos repetitivos em alvos (`targets`) claros.
-> As fontes canônicas dos comandos são o `AI-CONFIG.json` (seção `runbooks`) e o
-> `agents/devops-guidelines.md`.
+> **Arquivo:** [`Makefile`](../../Makefile) — o projeto **já traz** um Makefile completo.
+> O foco do bloco não é criá-lo do zero, e sim **entender por que ele existe**, dominar
+> seus alvos e **estendê-lo** com um novo target.
 
-**Motivação:** ninguém decora `uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000`. Com Makefile, vira `make dev`.
+**Motivação:** ninguém decora `uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000`. Com o Makefile, vira `make dev`. O arquivo vira a **interface única** do projeto — para dev, CI e IA (Dia 3).
 
-**Exercício — criar `Makefile` na raiz** (construir junto com a turma):
+### Anatomia do Makefile (percorrer ao vivo)
+
+O topo do arquivo traz configurações que valem discussão:
 
 ```makefile
-.PHONY: help install dev run up up-build down logs ps shell db-shell \
-        format lint type test check build clean
+SHELL := bash
+.SHELLFLAGS := -eu -o pipefail -c   # falha cedo: erro em qualquer etapa aborta o alvo
 
-help:            ## Lista os alvos disponíveis
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-	  | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+COMPOSE := docker compose           # variável → um só lugar para trocar
+FRONTEND_DIR := frontend
 
-install:         ## Instala dependências (incluindo dev)
-	uv sync --dev
-
-dev:             ## Roda a API localmente com hot-reload
-	uv run uvicorn screenflix.main:app --reload --reload-dir src --host 0.0.0.0 --port 8000
-
-up:              ## Sobe o stack em background
-	docker compose up -d
-
-up-build:        ## Sobe o stack reconstruindo as imagens
-	docker compose up --build
-
-down:            ## Derruba o stack
-	docker compose down
-
-logs:            ## Segue os logs do serviço api
-	docker compose logs -f api
-
-ps:              ## Estado dos serviços
-	docker compose ps
-
-db-shell:        ## Abre o psql no banco
-	docker compose exec db psql -U $${POSTGRES_USER} -d $${POSTGRES_DB}
-
-format:          ## Formata o código
-	uv run ruff format .
-
-lint:            ## Lint
-	uv run ruff check .
-
-type:            ## Checagem de tipos
-	uv run mypy src
-
-test:            ## Testes
-	uv run pytest
-
-check: format lint type test   ## Roda todos os quality gates (bloqueantes)
-
-build:           ## Build da imagem de produção
-	docker build -t screenflix:latest .
-
-clean:           ## Remove containers, volumes e imagens órfãs
-	docker compose down -v
-	docker image prune -f
+.DEFAULT_GOAL := help               # `make` sem argumento mostra a ajuda
 ```
+
+O alvo `help` é **auto-documentado**: ele varre os comentários `## ...` do próprio arquivo
+e imprime a lista de alvos. Por isso todo alvo tem um `## descrição`.
+
+```makefile
+help: ## Mostra esta ajuda
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+		| sort \
+		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+```
+
+Os alvos estão organizados por seção. Mostrar os principais:
+
+| Seção | Alvos | O que fazem |
+|-------|-------|-------------|
+| **Setup** | `install`, `lock` | `uv sync` · `uv lock` |
+| **Dev** | `dev`, `shell` | sobe a API com reload · abre um REPL Python do projeto |
+| **Qualidade** | `lint`, `format`, `format-check`, `typecheck`, `test`, `test-unit`, `test-integration`, `check` | ruff / mypy / pytest — ver abaixo |
+| **Docker** | `up`, `up-build`, `down`, `build`, `logs`, `ps`, `restart` | encapsulam `docker compose ...` |
+| **Frontend** | `front-install`, `front-dev`, `front-build`, `front-preview` | npm no diretório `frontend/` |
+| **Limpeza** | `clean` | remove caches (`.pytest_cache`, `.mypy_cache`, `.ruff_cache`, `__pycache__`) |
+
+**Pontos a destacar na seção Qualidade:**
+
+- `check: lint typecheck test` — é o **CI local**: roda lint + tipos + testes (repare que
+  `format` fica de fora — formatação é um alvo à parte; para checar sem alterar arquivos há o `format-check`).
+- Os testes são **fatiados pelos markers** definidos no `pyproject.toml`:
+  - `test-unit` → `pytest -m "not integration"`
+  - `test-integration` → `pytest -m integration`
+  - Amarra direto com o Dia 1 (containers) e a estratégia de testes do `agents/qa-guidelines.md`.
 
 **Testar ao vivo:**
 ```bash
-make help
-make up
-make check      # espelha os quality gates do AI-CONFIG.json
+make            # sem argumento → mostra o help (.DEFAULT_GOAL)
+make install
+make up-build   # docker compose up -d --build
+make check      # lint + typecheck + test (CI local)
+make front-dev  # sobe o Vite
 ```
 
 **Discussão — por que Makefile importa:**
-- **Interface única** — dev, CI e IA (Dia 3) usam os mesmos alvos.
+- **Interface única** — dev, CI e IA (Dia 3) usam os mesmos alvos; um comando trocado se ajusta num lugar só.
 - **Documentação executável** — `make help` mostra o que o projeto sabe fazer.
-- **Alinhamento com os gates** — `make check` reflete exatamente as `quality_checks.commands` do `AI-CONFIG.json` (`ruff format`, `ruff check`, `mypy src`, `pytest`), que são **bloqueantes** no fluxo do projeto.
+- **Robustez** — `.SHELLFLAGS := -eu -o pipefail -c` faz um alvo abortar no primeiro erro, em vez de seguir mascarando falha.
+
+### Mãos à obra — estender o Makefile
+
+O Makefile atual **não tem** um atalho para abrir o `psql` no banco nem para logs de um
+serviço específico. Adicione, na seção Docker, um alvo `db-shell`:
+
+```makefile
+.PHONY: db-shell
+db-shell: ## Abre o psql no banco
+	$(COMPOSE) exec db psql -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+```
+
+Rode `make help` e confirme que o novo alvo aparece **ordenado** na lista (graças ao `sort`).
 
 > **Detalhe técnico do Make:** variáveis de shell precisam de `$$` (ex.: `$${POSTGRES_USER}`)
-> para não serem interpoladas pelo Make. Bom ponto de armadilha para comentar.
+> para o Make não interpolá-las — quem resolve é o shell, em runtime. Bom ponto de armadilha para comentar.
+
+**Ideias extras de extensão (se sobrar tempo):** um alvo `quality` que também rode
+`format-check`; um `clean-docker` que faça `docker compose down -v` + `docker image prune -f`.
 
 ---
 
@@ -301,8 +338,8 @@ make check      # espelha os quality gates do AI-CONFIG.json
 
 **Resumo do dia:**
 - Container = ambiente reproduzível; **Dockerfile multi-stage** entrega imagem enxuta, non-root e com healthcheck.
-- **docker-compose** orquestra app + banco + cache; `init.sql` faz o bootstrap do schema.
-- **Makefile** padroniza os comandos e espelha os quality gates.
+- **docker-compose** orquestra app (`api`) + banco (`db`); `init.sql` faz o bootstrap do schema.
+- O **Makefile** do projeto é a interface única (dev, qualidade, docker, frontend); `make check` é o CI local.
 
 **Gancho para o Dia 2:** "Hoje empacotamos a aplicação. Amanhã vamos *abrir a caixa*
 e ver **como o código está organizado por dentro** — ambientes modulares e Clean
@@ -315,9 +352,9 @@ Architecture — usando o mesmo ScreenFlix."
 | Item | Estado no repo | Ação no workshop |
 |------|----------------|------------------|
 | `Dockerfile` | ✅ Existe (multi-stage, non-root, healthcheck) | Dissecar |
-| `docker-compose.yml` | ⚠️ Só `db` ativo; `api`/`redis` comentados | Ativar ao vivo |
+| `docker-compose.yml` | ✅ `db` + `api` ativos; `redis` removido (YAGNI); volume `db-data` comentado | Subir stack; ligar persistência |
 | `scripts/init.sql` | ✅ Existe (tabelas `media`/`episode`) | Mostrar bootstrap |
 | `.env` | ❌ Não versionado (`.gitignore`) | Criar em sala |
-| **Makefile** | ❌ **Não existe** | **Criar como hands-on** |
+| **Makefile** | ✅ Existe (rico: setup, dev, qualidade, docker, frontend, limpeza) | Ler, usar e **estender** (add `db-shell`) |
 | Volume persistente do db | ⚠️ Comentado no compose | Discutir persistência |
 | CI (`.github/workflows`) | ❌ Não existe | Mencionar (gancho futuro) |
