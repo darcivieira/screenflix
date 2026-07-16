@@ -339,33 +339,74 @@ card(s, Inches(8.25), Inches(4.5), Inches(4.45), Inches(2.05),
      ["O serviço redis, antes reservado,", "foi removido por falta de uso.",
       "Não carregue infra que não usa."], accent=WARN, body_size=13)
 
-# 1.4 comandos + makefile
-s = content_slide("Dia 1 · Infra & Containers", "Comandos & Makefile")
-code_box(s, Inches(0.6), Inches(2.15), Inches(6.0), Inches(4.4), [
-    ("# Comandos do dia a dia", MUTED),
+# 1.4 comandos essenciais
+s = content_slide("Dia 1 · Infra & Containers", "Comandos essenciais no dia a dia")
+code_box(s, Inches(0.6), Inches(2.15), Inches(6.5), Inches(4.4), [
     ("docker build -t screenflix .", TXT),
-    ("docker compose up --build", TXT),
+    ("docker compose up -d          # background", MUTED),
+    ("docker compose up --build     # rebuild", MUTED),
+    ("docker compose ps", TXT),
     ("docker compose logs -f api", TXT),
+    ("docker compose exec api bash", TXT),
     ("docker compose exec db psql ...", TXT),
     ("docker compose down", TXT),
-    ("", TXT),
-    ("# O projeto tem Makefile:", MUTED),
-    ("make dev       make up-build", OK),
-    ("make check     make front-dev", OK),
+    ("docker compose down -v        # apaga volumes!", WARN),
 ], size=14)
-card(s, Inches(6.85), Inches(2.15), Inches(5.85), Inches(4.4),
-     "Makefile — interface única",
-     ["Já existe no repo. Ninguém decora o",
-      "comando longo do uvicorn → make dev.",
+card(s, Inches(7.35), Inches(2.15), Inches(5.35), Inches(3.0),
+     "Contraste — sem Docker",
+     ["uv sync",
+      "uv run uvicorn screenflix.main:app --reload",
       "",
-      "• .DEFAULT_GOAL=help (self-documented)",
-      "• Seções: setup · dev · qualidade ·",
-      "  docker · frontend · limpeza",
+      "Aqui você precisa do Python 3.13 e de",
+      "um Postgres acessível na máquina.",
+      "No compose, tudo já vem junto e igual",
+      "para todo mundo."],
+     accent=ACCENT, body_size=13)
+rect(s, Inches(7.35), Inches(5.35), Inches(5.35), Inches(1.05), SURF2)
+txt(s, Inches(7.6), Inches(5.52), Inches(4.95), Inches(0.75),
+    [[R("Susto clássico:  ", 14, WARN, True),
+      R("down preserva os dados; down -v apaga os volumes.", 14, TXT)]])
+
+# 1.5 makefile
+s = content_slide("Dia 1 · Infra & Containers", "Makefile — a interface única",
+                  "Já existe no projeto: nós lemos, usamos e estendemos")
+code_box(s, Inches(0.6), Inches(2.35), Inches(6.7), Inches(4.05), [
+    ("SHELL := bash", TXT),
+    (".SHELLFLAGS := -eu -o pipefail -c  # falha cedo", OK),
+    ("COMPOSE := docker compose", TXT),
+    (".DEFAULT_GOAL := help   # `make` = ajuda", ACCENT),
+    ("", TXT),
+    ("help: ## varre os comentários ## do arquivo", MUTED),
+    ("check: lint typecheck test   # CI local", OK),
+    ("test-unit:        pytest -m \"not integration\"", TXT),
+    ("test-integration: pytest -m integration", TXT),
+], size=13)
+card(s, Inches(7.55), Inches(2.35), Inches(5.15), Inches(4.05),
+     "Interface única do time",
+     ["Ninguém decora o comando longo do",
+      "uvicorn → make dev.",
+      "",
+      "Seções: setup · dev · qualidade ·",
+      "docker · frontend · limpeza.",
+      "",
       "• make check = CI local (lint+types+test)",
-      "• test-unit / test-integration (markers)",
+      "• make help se auto-documenta (sort)",
       "",
-      "Hands-on: estender com make db-shell."],
+      "Hands-on: adicionar make db-shell."],
      accent=BRAND, body_size=13)
+
+# 1.6 fechamento
+s = content_slide("Dia 1 · Infra & Containers", "Fechamento & gancho para o Dia 2")
+bullets(s, Inches(0.7), Inches(2.35), Inches(11.9), [
+    ("Container = ambiente reproduzível  ", "— Dockerfile multi-stage: imagem enxuta, non-root, com healthcheck."),
+    ("docker-compose orquestra  ", "api + db; o init.sql faz o bootstrap do schema."),
+    ("Makefile é a interface única  ", "— make check é o CI local do projeto."),
+], size=18, gap=18, marker_col=BRAND)
+rect(s, Inches(0.7), Inches(5.2), Inches(11.9), Inches(1.2), CARD, line=SURF2, line_w=Pt(1))
+rect(s, Inches(0.7), Inches(5.2), Inches(0.1), Inches(1.2), ACCENT)
+txt(s, Inches(1.0), Inches(5.42), Inches(11.3), Inches(0.8),
+    [[R("Gancho:  ", 16, ACCENT, True),
+      R("hoje empacotamos a aplicação. Amanhã abrimos a caixa — como o código se organiza por dentro (ambientes modulares e Clean Architecture).", 16, TXT)]])
 
 # ══════════════════════════════════════════════════════════════
 # DIA 2
@@ -374,7 +415,19 @@ divider("Dia 2", "Programação Pragmática",
         ["Como o código se organiza por dentro",
          "Ambientes modulares · Clean Architecture · sem dogmatismo"], ACCENT)
 
-# 2.1 ambientes modulares
+# 2.1 tese
+s = content_slide("Dia 2 · Programação Pragmática", "Arquitetura serve à mudança",
+                  "Pragmática = aplicar princípios na medida certa, sem dogma", accent=ACCENT)
+txt(s, Inches(0.7), Inches(2.6), Inches(11.9), Inches(1.5),
+    [[R("Arquitetura não é enfeite. Ela existe para tornar a mudança ", 23, TXT),
+      R("barata e segura.", 23, ACCENT, True)]], line_spacing=1.2)
+card(s, Inches(0.7), Inches(4.55), Inches(11.9), Inches(1.75),
+     "Monólito modular em camadas",
+     ["Um único deploy — simples de operar — mas bem organizado por dentro, fácil de evoluir.",
+      "É o ponto ideal para a maioria dos times antes de sequer pensar em microsserviços."],
+     accent=ACCENT, body_size=15)
+
+# 2.2 ambientes modulares
 s = content_slide("Dia 2 · Programação Pragmática", "Ambientes modulares", accent=ACCENT)
 txt(s, Inches(0.6), Inches(2.1), Inches(12), Inches(0.5),
     [[R("A aplicação ", 16, MUTED), R("não sabe", 16, TXT, True),
@@ -402,8 +455,8 @@ card(s, Inches(7.85), Inches(2.8), Inches(4.85), Inches(3.5),
       "VITE_API_BASE (com modo demo)."],
      accent=ACCENT, body_size=13)
 
-# 2.2 camadas
-s = content_slide("Dia 2 · Programação Pragmática", "Clean Architecture — as 4 camadas", accent=ACCENT)
+# 2.3 mapa das camadas
+s = content_slide("Dia 2 · Programação Pragmática", "O mapa das camadas", accent=ACCENT)
 layers = [
     ("Presentation", "API HTTP (FastAPI) — endpoints finos, validação, DI", BRAND),
     ("Application", "Services, Use Cases e Schemas (DTOs) — orquestração", ACCENT),
@@ -422,8 +475,8 @@ txt(s, Inches(0.9), Inches(6.15), Inches(11.5), Inches(0.5),
     [[R("Dependências apontam para dentro:  ", 15, TXT, True),
       R("presentation → application → domain", 15, ACCENT, True, MONO)]])
 
-# 2.3 regra de dependência / padrões
-s = content_slide("Dia 2 · Programação Pragmática", "Padrões & regra de ouro", accent=ACCENT)
+# 2.4 clean architecture em detalhe
+s = content_slide("Dia 2 · Programação Pragmática", "Clean Architecture — camada por camada", accent=ACCENT)
 code_box(s, Inches(0.6), Inches(2.15), Inches(7.0), Inches(3.2), [
     ("@router.get(\"/movies/top5\")", TXT),
     ("async def top5(service = Depends(...)):", TXT),
@@ -445,7 +498,21 @@ txt(s, Inches(0.85), Inches(5.78), Inches(11.6), Inches(0.5),
     [[R("REGRA DE OURO:  ", 15, WARN, True),
       R("nunca consulte o banco direto de um endpoint — sempre service → repository.", 15, TXT)]])
 
-# 2.4 trade-offs
+# 2.5 mãos à obra
+s = content_slide("Dia 2 · Programação Pragmática", "Mãos à obra — respeitar as camadas",
+                  "Adicionar GET /api/v1/media/count sem furar as camadas", accent=ACCENT)
+bullets(s, Inches(0.7), Inches(2.5), Inches(11.9), [
+    ("Application  ", "— método count() no MediaService usando o repositório."),
+    ("Presentation  ", "— um handler fino que só delega ao service."),
+    ("Contrato  ", "— um DTO Pydantic de resposta (nunca a entidade crua)."),
+    ("Testes  ", "— caminho feliz + caminho de erro (política do projeto)."),
+], size=17, gap=14, marker_col=ACCENT)
+rect(s, Inches(0.7), Inches(5.55), Inches(11.9), Inches(0.85), SURF2)
+txt(s, Inches(0.95), Inches(5.72), Inches(11.4), Inches(0.5),
+    [[R("REGRA DE OURO:  ", 15, WARN, True),
+      R("nenhuma query no endpoint. Validar com  make check.", 15, TXT)]])
+
+# 2.6 trade-offs
 s = content_slide("Dia 2 · Programação Pragmática", "Onde o ScreenFlix escolheu pragmatismo", accent=ACCENT)
 bullets(s, Inches(0.7), Inches(2.35), Inches(11.8), [
     ("Entidades = modelos ORM  ", "— simplicidade sobre portabilidade (não são POPOs puras)."),
@@ -488,38 +555,96 @@ for i, (a, b) in enumerate(maps):
     rect(s, Inches(6.9), yy, Inches(5.8), Inches(0.5), CARD)
     txt(s, Inches(7.1), yy + Inches(0.11), Inches(5.5), Inches(0.35), [[R(b, 13, OK, fnt=MONO)]])
 
-# 3.2 Skills vs Subagents
-s = content_slide("Dia 3 · IA no Desenvolvimento", "Skills vs Subagents", accent=OK)
-card(s, Inches(0.6), Inches(2.2), Inches(5.95), Inches(4.3),
-     "Skill  ·  .claude/skills/*/SKILL.md",
-     ["Procedimento reutilizável na",
-      "conversa principal, carregado",
-      "sob demanda. Vira /comando.",
+# 3.2 CLAUDE.md
+s = content_slide("Dia 3 · IA no Desenvolvimento", "CLAUDE.md — a memória do projeto",
+                  "O Claude Code lê CLAUDE.md, não AGENTS.md → importe o que já existe", accent=OK)
+code_box(s, Inches(0.6), Inches(2.35), Inches(7.0), Inches(4.05), [
+    ("# CLAUDE.md", MUTED),
+    ("@AGENTS.md", OK),
+    ("@AI-CONFIG.json", OK),
+    ("@agents/architecture-planning.md", OK),
+    ("", TXT),
+    ("## Regras rápidas", MUTED),
+    ("- camadas: nunca query no endpoint", TXT),
+    ("- rode `make check` antes de concluir", TXT),
+    ("- segredos vêm do ambiente (.env)", TXT),
+], size=14)
+card(s, Inches(7.85), Inches(2.35), Inches(4.85), Inches(4.05),
+     "Reaproveite, não duplique",
+     ["Lido no início de toda sessão;",
+      "sobrevive ao compact (relido do disco).",
       "",
-      "Ex.: /quality-gate roda",
-      "ruff format · ruff check ·",
-      "mypy src · pytest",
-      "(os gates bloqueantes do projeto).",
+      "O @ importa o arquivo existente — todo",
+      "o trabalho do AGENTS.md e da pasta",
+      "agents entra no contexto.",
       "",
-      "Hook: torna o gate automático",
-      "no evento Stop (settings.json)."],
-     accent=OK, body_size=14)
-card(s, Inches(6.75), Inches(2.2), Inches(5.95), Inches(4.3),
-     "Subagent  ·  .claude/agents/*.md",
-     ["Trabalhador isolado, com contexto",
-      "e ferramentas próprios. O Claude",
-      "principal delega pela description.",
-      "",
-      "Cada guia de /agents vira um",
-      "especialista:",
-      "  architect · backend-dev ·",
-      "  database-dev · security-check ·",
-      "  qa-reviewer",
-      "",
-      "Roda do zero e devolve resultado."],
-     accent=BRAND, body_size=14)
+      "Efeito: o Claude já entra sabendo das",
+      "camadas e dos quality gates."],
+     accent=OK, body_size=13)
 
-# 3.3 Agent Teams
+# 3.3 Skills
+s = content_slide("Dia 3 · IA no Desenvolvimento", "Skills — encapsulando procedimentos",
+                  "Procedimento reutilizável, carregado sob demanda, vira /comando", accent=OK)
+code_box(s, Inches(0.6), Inches(2.35), Inches(7.0), Inches(4.05), [
+    ("# .claude/skills/quality-gate/SKILL.md", MUTED),
+    ("---", TXT),
+    ("name: quality-gate", OK),
+    ("description: roda os gates bloqueantes", TXT),
+    ("invocation: both", TXT),
+    ("---", TXT),
+    ("1. uv run ruff format .", TXT),
+    ("2. uv run ruff check .", TXT),
+    ("3. uv run mypy src", TXT),
+    ("4. uv run pytest", TXT),
+], size=13)
+card(s, Inches(7.85), Inches(2.35), Inches(4.85), Inches(4.05),
+     "Skill  ·  /quality-gate",
+     ["Vive em .claude/skills/<nome>/",
+      "SKILL.md. Carregada sob demanda",
+      "(só ocupa contexto quando usada).",
+      "",
+      "Encapsula os quality_checks do",
+      "AI-CONFIG.json num só comando.",
+      "",
+      "Hook: torna o gate automático no",
+      "evento Stop (settings.json) — a",
+      "máquina executa, não o modelo."],
+     accent=OK, body_size=13)
+
+# 3.4 Subagents
+s = content_slide("Dia 3 · IA no Desenvolvimento", "Subagents — especialistas por domínio",
+                  "Cada guia de /agents vira um especialista isolado; o Claude delega", accent=OK)
+code_box(s, Inches(0.6), Inches(2.35), Inches(6.35), Inches(4.05), [
+    ("# .claude/agents/qa-reviewer.md", MUTED),
+    ("---", TXT),
+    ("name: qa-reviewer", OK),
+    ("description: revisor de QA; use após", TXT),
+    ("  alterar código. Exige testes.", TXT),
+    ("tools: Read, Grep, Glob, Bash", TXT),
+    ("model: sonnet", TXT),
+    ("---", TXT),
+    ("Fonte: agents/qa-guidelines.md", MUTED),
+], size=13)
+txt(s, Inches(7.2), Inches(2.35), Inches(5.5), Inches(0.4),
+    [[R("agents/*.md   →   .claude/agents/*", 13, MUTED, True, MONO)]])
+pairs = [
+    ("architecture-planning", "architect"),
+    ("backend-development", "backend-dev"),
+    ("database-development", "database-dev"),
+    ("security-check", "security-check"),
+    ("qa-guidelines", "qa-reviewer"),
+]
+for i, (a, b) in enumerate(pairs):
+    yy = Inches(2.9) + i * Inches(0.6)
+    rect(s, Inches(7.2), yy, Inches(3.2), Inches(0.48), CARD)
+    txt(s, Inches(7.35), yy + Inches(0.11), Inches(2.95), Inches(0.35), [[R(a, 12, TXT, fnt=MONO)]])
+    txt(s, Inches(10.45), yy + Inches(0.07), Inches(0.3), Inches(0.35), [[R("→", 14, OK, True)]])
+    rect(s, Inches(10.8), yy, Inches(1.9), Inches(0.48), CARD)
+    txt(s, Inches(10.93), yy + Inches(0.11), Inches(1.7), Inches(0.35), [[R(b, 12, OK, fnt=MONO)]])
+txt(s, Inches(7.2), Inches(6.0), Inches(5.5), Inches(0.5),
+    [[R("O principal delega pela description; cada um carrega só o seu guia.", 12, MUTED)]])
+
+# 3.5 Agent Teams
 s = content_slide("Dia 3 · IA no Desenvolvimento", "Agent Teams",
                   "Orquestração multi-agente — experimental", accent=OK)
 pill(s, Inches(0.6), Inches(2.1), "EXPERIMENTAL", color=WARN, w=Inches(2.0))
