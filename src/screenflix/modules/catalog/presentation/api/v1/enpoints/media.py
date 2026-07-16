@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from screenflix.core.app.dependencies import get_db_session
 from screenflix.core.logging.logger import get_logger
 from screenflix.modules.catalog.application.schemas.media import MediaBaseSchema, MediaSchema, \
-    EpisodeBaseSchema, EpisodeSchema
+    MediaCountSchema, EpisodeBaseSchema, EpisodeSchema
 from screenflix.modules.catalog.application.services import MediaService, EpisodeService
 
 logger = get_logger(__name__)
@@ -45,6 +45,14 @@ async def list_top_five_movies(service: MediaService = Depends(get_media_service
 @router.get("/series/top5", response_model=list[MediaBaseSchema])
 async def list_top_five_series(service: MediaService = Depends(get_media_service)):
     return await service.top_five(media_type="series")
+
+# IMPORTANTE: /count precisa vir ANTES de /{media_id}, senão o FastAPI
+# casa "count" como se fosse um media_id e a rota nunca é alcançada.
+@router.get("/count", response_model=MediaCountSchema)
+async def count_media(media_type: str | None = None,
+                      service: MediaService = Depends(get_media_service)):
+    total = await service.count(media_type=media_type)
+    return MediaCountSchema(total=total)
 
 @router.get("/{media_id}", response_model=MediaSchema)
 async def get_media(media_id: int, service: MediaService = Depends(get_media_service)):

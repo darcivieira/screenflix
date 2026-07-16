@@ -21,3 +21,6 @@ class MediaService:
 
     async def get(self, media_id: int) -> Media | None:
         return await self.repository.media.get_by_id(media_id)
+
+    async def count(self, media_type: str | None = None) -> int:
+        return await self.repository.media.count(media_type=media_type)

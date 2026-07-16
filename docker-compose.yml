@@ -1,5 +1,5 @@
-#volumes:
-#  db-data:
+volumes:
+  db-data:
 
 services:
   db:
@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-#      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5532:5432"
